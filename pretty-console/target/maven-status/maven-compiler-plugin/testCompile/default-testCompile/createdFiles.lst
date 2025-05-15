@@ -1,0 +1,5 @@
+io\joshuasalcedo\library\prettyconsole\PrettyTest.class
+io\joshuasalcedo\library\prettyconsole\utils\FileUtilsTest.class
+io\joshuasalcedo\library\prettyconsole\utils\TextUtilsTest.class
+io\joshuasalcedo\library\prettyconsole\format\text\BasicMessageFormatTest.class
+io\joshuasalcedo\library\prettyconsole\utils\TerminalUtilsTest.class

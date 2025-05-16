@@ -5,6 +5,7 @@ import io.joshuasalcedo.library.prettyconsole.format.VisualizationType;
 import io.joshuasalcedo.library.prettyconsole.style.ForegroundColor;
 import io.joshuasalcedo.library.prettyconsole.style.Style;
 import io.joshuasalcedo.library.prettyconsole.utils.TextUtils;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -294,18 +295,49 @@ public class TableFormat implements VisualFormat {
 
         // If column widths are specified, use them
         if (columnWidths != null && columnWidths.length > 0) {
-            for (int i = 0; i < numColumns; i++) {
-                if (i < columnWidths.length) {
-                    result[i] = columnWidths[i];
-                } else {
-                    // For columns without specified width, use a default
-                    result[i] = (width - Arrays.stream(result, 0, i).sum()) / (numColumns - i);
-                }
-            }
-            return result;
+            return calculateSpecifiedColumnWidths(numColumns);
         }
 
         // Calculate column widths based on content
+        calculateContentBasedColumnWidths(data, result);
+
+        // Add padding
+        addPaddingToColumnWidths(result);
+
+        // Adjust column widths to fit within the total width
+        adjustColumnWidthsToFitTotalWidth(result);
+
+        return result;
+    }
+
+    /**
+     * Calculates column widths based on specified column widths.
+     *
+     * @param numColumns The number of columns
+     * @return An array of column widths
+     */
+    private int[] calculateSpecifiedColumnWidths(int numColumns) {
+        int[] result = new int[numColumns];
+
+        for (int i = 0; i < numColumns; i++) {
+            if (i < columnWidths.length) {
+                result[i] = columnWidths[i];
+            } else {
+                // For columns without specified width, use a default
+                result[i] = (width - Arrays.stream(result, 0, i).sum()) / (numColumns - i);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Calculates column widths based on content.
+     *
+     * @param data   The table data
+     * @param result The array to store the calculated column widths
+     */
+    private void calculateContentBasedColumnWidths(String[][] data, int[] result) {
         for (String[] row : data) {
             if (row != null) {
                 for (int i = 0; i < row.length; i++) {
@@ -315,23 +347,58 @@ public class TableFormat implements VisualFormat {
                 }
             }
         }
+    }
 
-        // Add padding
-        for (int i = 0; i < result.length; i++) {
-            result[i] += CELL_PADDING; // Add 1 space of padding on each side
+    /**
+     * Adds padding to column widths.
+     *
+     * @param columnWidths The array of column widths
+     */
+    private void addPaddingToColumnWidths(int[] columnWidths) {
+        for (int i = 0; i < columnWidths.length; i++) {
+            columnWidths[i] += CELL_PADDING; // Add 1 space of padding on each side
         }
+    }
 
-        // Adjust column widths to fit within the total width
-        int totalWidth = Arrays.stream(result).sum();
+    /**
+     * Adjusts column widths to fit within the total width.
+     *
+     * @param columnWidths The array of column widths
+     */
+    private void adjustColumnWidthsToFitTotalWidth(int[] columnWidths) {
+        int totalWidth = Arrays.stream(columnWidths).sum();
         if (totalWidth > width) {
             // Scale down columns proportionally
             double scale = (double) width / totalWidth;
-            for (int i = 0; i < result.length; i++) {
-                result[i] = Math.max(MIN_COLUMN_WIDTH, (int) (result[i] * scale)); // Minimum column width
+            for (int i = 0; i < columnWidths.length; i++) {
+                columnWidths[i] = Math.max(MIN_COLUMN_WIDTH, (int) (columnWidths[i] * scale)); // Minimum column width
+            }
+        }
+    }
+
+    /**
+     * Creates a horizontal border for the table.
+     *
+     * @param columnWidths The width of each column
+     * @param leftChar The character for the left edge
+     * @param middleChar The character for the column separators
+     * @param rightChar The character for the right edge
+     * @return The border string
+     */
+    private String createBorder(int[] columnWidths, char leftChar, char middleChar, char rightChar) {
+        StringBuilder result = new StringBuilder();
+        result.append(Style.apply(color, String.valueOf(leftChar)));
+
+        for (int i = 0; i < columnWidths.length; i++) {
+            result.append(Style.apply(color, TextUtils.repeat(HORIZONTAL, columnWidths[i])));
+            if (i < columnWidths.length - 1) {
+                result.append(Style.apply(color, String.valueOf(middleChar)));
             }
         }
 
-        return result;
+        result.append(Style.apply(color, String.valueOf(rightChar)));
+        result.append('\n');
+        return result.toString();
     }
 
     /**
@@ -341,19 +408,7 @@ public class TableFormat implements VisualFormat {
      * @return The top border string
      */
     private String createTopBorder(int[] columnWidths) {
-        StringBuilder result = new StringBuilder();
-        result.append(Style.apply(color, String.valueOf(TOP_LEFT)));
-
-        for (int i = 0; i < columnWidths.length; i++) {
-            result.append(Style.apply(color, TextUtils.repeat(HORIZONTAL, columnWidths[i])));
-            if (i < columnWidths.length - 1) {
-                result.append(Style.apply(color, String.valueOf(TOP_TEE)));
-            }
-        }
-
-        result.append(Style.apply(color, String.valueOf(TOP_RIGHT)));
-        result.append('\n');
-        return result.toString();
+        return createBorder(columnWidths, TOP_LEFT, TOP_TEE, TOP_RIGHT);
     }
 
     /**
@@ -363,19 +418,7 @@ public class TableFormat implements VisualFormat {
      * @return The row separator string
      */
     private String createRowSeparator(int[] columnWidths) {
-        StringBuilder result = new StringBuilder();
-        result.append(Style.apply(color, String.valueOf(LEFT_TEE)));
-
-        for (int i = 0; i < columnWidths.length; i++) {
-            result.append(Style.apply(color, TextUtils.repeat(HORIZONTAL, columnWidths[i])));
-            if (i < columnWidths.length - 1) {
-                result.append(Style.apply(color, String.valueOf(CROSS)));
-            }
-        }
-
-        result.append(Style.apply(color, String.valueOf(RIGHT_TEE)));
-        result.append('\n');
-        return result.toString();
+        return createBorder(columnWidths, LEFT_TEE, CROSS, RIGHT_TEE);
     }
 
     /**
@@ -385,19 +428,7 @@ public class TableFormat implements VisualFormat {
      * @return The bottom border string
      */
     private String createBottomBorder(int[] columnWidths) {
-        StringBuilder result = new StringBuilder();
-        result.append(Style.apply(color, String.valueOf(BOTTOM_LEFT)));
-
-        for (int i = 0; i < columnWidths.length; i++) {
-            result.append(Style.apply(color, TextUtils.repeat(HORIZONTAL, columnWidths[i])));
-            if (i < columnWidths.length - 1) {
-                result.append(Style.apply(color, String.valueOf(BOTTOM_TEE)));
-            }
-        }
-
-        result.append(Style.apply(color, String.valueOf(BOTTOM_RIGHT)));
-        result.append('\n');
-        return result.toString();
+        return createBorder(columnWidths, BOTTOM_LEFT, BOTTOM_TEE, BOTTOM_RIGHT);
     }
 
     /**
@@ -412,15 +443,8 @@ public class TableFormat implements VisualFormat {
         result.append(Style.apply(color, String.valueOf(VERTICAL)));
 
         for (int i = 0; i < columnWidths.length; i++) {
-            String cell = (row != null && i < row.length) ? row[i] : "";
-            if (cell == null) {
-                cell = "";
-            }
-
-            // Apply alignment
-            Alignment alignment = (columnAlignments != null && i < columnAlignments.length)
-                ? columnAlignments[i]
-                : Alignment.LEFT;
+            String cell = getCellContent(row, i);
+            Alignment alignment = getCellAlignment(i);
             String formattedCell = formatCell(cell, columnWidths[i], alignment);
 
             result.append(formattedCell);
@@ -429,6 +453,30 @@ public class TableFormat implements VisualFormat {
 
         result.append('\n');
         return result.toString();
+    }
+
+    /**
+     * Gets the content of a cell.
+     *
+     * @param row The row data
+     * @param columnIndex The index of the column
+     * @return The cell content
+     */
+    private String getCellContent(String[] row, int columnIndex) {
+        String cell = (row != null && columnIndex < row.length) ? row[columnIndex] : "";
+        return cell != null ? cell : "";
+    }
+
+    /**
+     * Gets the alignment for a cell.
+     *
+     * @param columnIndex The index of the column
+     * @return The alignment for the cell
+     */
+    private Alignment getCellAlignment(int columnIndex) {
+        return (columnAlignments != null && columnIndex < columnAlignments.length)
+            ? columnAlignments[columnIndex]
+            : Alignment.LEFT;
     }
 
     /**

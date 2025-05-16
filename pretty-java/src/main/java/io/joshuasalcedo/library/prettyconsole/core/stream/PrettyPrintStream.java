@@ -1,10 +1,7 @@
 package io.joshuasalcedo.library.prettyconsole.core.stream;
 
-import io.joshuasalcedo.library.prettyconsole.style.BackgroundColor;
-import io.joshuasalcedo.library.prettyconsole.style.ForegroundColor;
-import io.joshuasalcedo.library.prettyconsole.style.Style;
-import io.joshuasalcedo.library.prettyconsole.style.StyleFormatter;
-import io.joshuasalcedo.library.prettyconsole.style.TextStyle;
+import io.joshuasalcedo.library.prettyconsole.style.*;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Locale;

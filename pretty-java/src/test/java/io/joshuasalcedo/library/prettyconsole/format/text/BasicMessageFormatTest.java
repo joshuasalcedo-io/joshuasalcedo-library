@@ -2,6 +2,7 @@ package io.joshuasalcedo.library.prettyconsole.format.text;
 
 import io.joshuasalcedo.library.prettyconsole.PrettyStyle;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BasicMessageFormatTest {

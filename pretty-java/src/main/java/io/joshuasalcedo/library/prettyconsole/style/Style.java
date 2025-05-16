@@ -1,7 +1,5 @@
 package io.joshuasalcedo.library.prettyconsole.style;
 
-import io.joshuasalcedo.library.prettyconsole.utils.TerminalUtils;
-
 import java.util.regex.Pattern;
 
 /**
@@ -141,6 +139,9 @@ public final class Style {
 
     /**
      * Convert a hex color code to an RGB color.
+     * 
+     * Note: This implementation is duplicated in PrettyStyle.java.
+     * Any changes here should be reflected there as well.
      *
      * @param hexColor The hex color code (e.g., "#FF5500" or "FF5500")
      * @return A new RGB color object, or null if the input is invalid
@@ -180,9 +181,9 @@ public final class Style {
      */
     public static String rgbToHex(int r, int g, int b) {
         return String.format("#%02X%02X%02X",
-                Math.max(0, Math.min(255, r)),
-                Math.max(0, Math.min(255, g)),
-                Math.max(0, Math.min(255, b)));
+                Math.clamp(r, 0, 255),
+                Math.clamp(g, 0, 255),
+                Math.clamp(b, 0, 255));
     }
 
     /**

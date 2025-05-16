@@ -1,6 +1,11 @@
 package io.joshuasalcedo.library.prettyconsole.format.progress;
 
 import io.joshuasalcedo.library.prettyconsole.PrettyStyle;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -62,8 +67,11 @@ public class ProgressBarRunner {
     // Default spinner characters
     private static final char[] DEFAULT_SPINNER_CHARS = { '|', '/', '-', '\\' };
 
-    // Thread that handles the animation
-    private Thread animationThread;
+    // Executor service that handles the animation
+    private ScheduledExecutorService scheduler;
+
+    // Future for the animation task
+    private ScheduledFuture<?> animationTask;
 
     // Atomic variables for thread-safe state management
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -194,13 +202,24 @@ public class ProgressBarRunner {
     }
 
     /**
-     * Starts the progress bar animation in a separate thread.
+     * Starts the progress bar animation using a scheduled executor.
      */
     public void start() {
         if (running.compareAndSet(false, true)) {
-            animationThread = new Thread(this::runAnimation);
-            animationThread.setDaemon(true);
-            animationThread.start();
+            // Create a new scheduler
+            scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r);
+                t.setDaemon(true);
+                return t;
+            });
+
+            // Schedule the animation task to run at fixed intervals
+            animationTask = scheduler.scheduleAtFixedRate(
+                this::updateAnimation, 
+                0, 
+                updateIntervalMs, 
+                TimeUnit.MILLISECONDS
+            );
         }
     }
 
@@ -210,11 +229,19 @@ public class ProgressBarRunner {
     public void stop() {
         if (running.compareAndSet(true, false)) {
             try {
-                if (animationThread != null) {
-                    animationThread.join(1000); // Wait up to 1 second for thread to finish
+                if (animationTask != null) {
+                    animationTask.cancel(false);
+                }
+                if (scheduler != null) {
+                    scheduler.shutdown();
+                    // Wait for tasks to complete
+                    if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                        scheduler.shutdownNow();
+                    }
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                scheduler.shutdownNow();
             }
             // Print a newline to ensure next output starts on a fresh line
             System.out.println();
@@ -228,7 +255,7 @@ public class ProgressBarRunner {
      */
     public void setProgress(double value) {
         // Clamp value between 0 and 1
-        double clampedValue = Math.max(0.0, Math.min(1.0, value));
+        double clampedValue = Math.clamp(value, 0.0, 1.0);
         progress.set(clampedValue);
     }
 
@@ -288,71 +315,77 @@ public class ProgressBarRunner {
     }
 
     /**
-     * Main animation loop that runs in a separate thread.
+     * Single animation update that is scheduled to run at fixed intervals.
      */
-    private void runAnimation() {
-        int spinnerIndex = 0;
+    private void updateAnimation() {
+        // Use a static variable to track spinner index across invocations
+        // This is safe because it's only accessed from the scheduler thread
+        final int spinnerIndex = getNextSpinnerIndex();
 
-        while (running.get()) {
-            // Clear the previous line
-            System.out.print("\r");
+        // Only proceed if we're still running
+        if (!running.get()) {
+            return;
+        }
 
-            // Get current state (thread-safe)
-            String currentMessage = message.get();
-            double currentProgress = progress.get();
-            boolean isIndeterminate = indeterminate.get();
+        // Clear the previous line
+        System.out.print("\r");
 
-            // Build the progress display based on animation type
-            StringBuilder display = new StringBuilder();
+        // Get current state (thread-safe)
+        String currentMessage = message.get();
+        double currentProgress = progress.get();
+        boolean isIndeterminate = indeterminate.get();
 
-            // Add the message if present
-            if (currentMessage != null && !currentMessage.isEmpty()) {
-                display.append(currentMessage).append(" ");
-            }
+        // Build the progress display based on animation type
+        StringBuilder display = new StringBuilder();
 
-            // Choose animation based on type and indeterminate state
-            if (isIndeterminate || animationType == AnimationType.SPINNER) {
-                // Spinner animation
+        // Add the message if present
+        if (currentMessage != null && !currentMessage.isEmpty()) {
+            display.append(currentMessage).append(" ");
+        }
+
+        // Choose animation based on type and indeterminate state
+        if (isIndeterminate || animationType == AnimationType.SPINNER) {
+            // Spinner animation
+            char spinChar = spinnerChars[spinnerIndex % spinnerChars.length];
+            display.append(PrettyStyle.apply(color, String.valueOf(spinChar)));
+        } else {
+            // Progress bar animation
+            ProgressBarFormat progressBar = new ProgressBarFormat(
+                currentProgress,
+                width,
+                color,
+                completeChar,
+                incompleteChar,
+                startChar,
+                endChar,
+                showPercentage
+            );
+
+            // For combined animation, add a spinner character
+            if (animationType == AnimationType.PROGRESS_WITH_SPINNER) {
                 char spinChar = spinnerChars[spinnerIndex % spinnerChars.length];
-                display.append(PrettyStyle.apply(color, String.valueOf(spinChar)));
-                spinnerIndex++;
+                display
+                    .append(progressBar.format(""))
+                    .append(" ")
+                    .append(PrettyStyle.apply(color, String.valueOf(spinChar)));
             } else {
-                // Progress bar animation
-                ProgressBarFormat progressBar = new ProgressBarFormat(
-                    currentProgress,
-                    width,
-                    color,
-                    completeChar,
-                    incompleteChar,
-                    startChar,
-                    endChar,
-                    showPercentage
-                );
-
-                // For combined animation, add a spinner character
-                if (animationType == AnimationType.PROGRESS_WITH_SPINNER) {
-                    char spinChar = spinnerChars[spinnerIndex % spinnerChars.length];
-                    display
-                        .append(progressBar.format(""))
-                        .append(" ")
-                        .append(PrettyStyle.apply(color, String.valueOf(spinChar)));
-                    spinnerIndex++;
-                } else {
-                    display.append(progressBar.format(""));
-                }
-            }
-
-            // Print the current state
-            System.out.print(display);
-
-            // Sleep for the update interval
-            try {
-                Thread.sleep(updateIntervalMs);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
+                display.append(progressBar.format(""));
             }
         }
+
+        // Print the current state
+        System.out.print(display);
+    }
+
+    // Track spinner index across invocations
+    private int spinnerIndex = 0;
+
+    /**
+     * Get the next spinner index and increment the counter.
+     * This is called from the scheduler thread only.
+     */
+    private int getNextSpinnerIndex() {
+        return spinnerIndex++;
     }
 
     /**

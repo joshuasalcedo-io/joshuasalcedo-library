@@ -17,15 +17,15 @@ Environment variables:
   SONATYPE_PASSWORD - Your Sonatype password or token
 """
 
-import os
-import sys
+import argparse
 import base64
 import json
-import argparse
-import time
+import os
 import requests
-from pathlib import Path
+import sys
+import time
 from getpass import getpass
+from pathlib import Path
 
 BASE_URL = "https://central.sonatype.com/api/v1/publisher"
 

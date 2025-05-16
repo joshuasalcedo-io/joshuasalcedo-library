@@ -1,8 +1,8 @@
 package io.joshuasalcedo.library.prettyconsole.format.progress;
 
+import io.joshuasalcedo.library.prettyconsole.PrettyStyle;
 import io.joshuasalcedo.library.prettyconsole.api.VisualFormat;
 import io.joshuasalcedo.library.prettyconsole.format.VisualizationType;
-import io.joshuasalcedo.library.prettyconsole.PrettyStyle;
 import io.joshuasalcedo.library.prettyconsole.utils.TextUtils;
 
 /**
@@ -131,7 +131,7 @@ public class ProgressBarFormat implements VisualFormat {
         char endChar,
         boolean showPercentage
     ) {
-        this.progress = Math.max(MIN_PROGRESS, Math.min(MAX_PROGRESS, progress)); // Clamp between 0 and 1
+        this.progress = Math.clamp(progress, MIN_PROGRESS, MAX_PROGRESS); // Clamp between 0 and 1
         this.width = width;
         this.color = color;
         this.completeChar = completeChar;

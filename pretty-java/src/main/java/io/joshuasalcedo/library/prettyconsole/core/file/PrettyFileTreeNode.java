@@ -1,11 +1,12 @@
 package io.joshuasalcedo.library.prettyconsole.core.file;
 
+import lombok.Data;
+
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import lombok.Data;
 
 /**
  * A node in a file tree structure that works with PrettyFile.

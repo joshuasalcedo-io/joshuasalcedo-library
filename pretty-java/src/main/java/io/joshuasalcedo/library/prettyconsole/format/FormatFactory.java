@@ -3,8 +3,6 @@ package io.joshuasalcedo.library.prettyconsole.format;
 import io.joshuasalcedo.library.prettyconsole.PrettyStyle;
 import io.joshuasalcedo.library.prettyconsole.api.MessageFormat;
 import io.joshuasalcedo.library.prettyconsole.api.TextFormat;
-import io.joshuasalcedo.library.prettyconsole.core.file.PrettyFile;
-import io.joshuasalcedo.library.prettyconsole.style.ForegroundColor;
 import io.joshuasalcedo.library.prettyconsole.format.layout.BoxFormat;
 import io.joshuasalcedo.library.prettyconsole.format.layout.DividerFormat;
 import io.joshuasalcedo.library.prettyconsole.format.layout.FileTreeFormat;
@@ -12,8 +10,8 @@ import io.joshuasalcedo.library.prettyconsole.format.progress.ProgressBarFormat;
 import io.joshuasalcedo.library.prettyconsole.format.progress.ProgressBarRunner;
 import io.joshuasalcedo.library.prettyconsole.format.text.BasicMessageFormat;
 import io.joshuasalcedo.library.prettyconsole.format.text.MessageType;
+import io.joshuasalcedo.library.prettyconsole.style.ForegroundColor;
 
-import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 

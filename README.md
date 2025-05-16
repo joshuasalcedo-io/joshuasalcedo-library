@@ -6,11 +6,14 @@ A library of reusable components for Java applications.
 ## Deployment Commands
 
 ```shell
+cd $(git rev-parse --show-toplevel)
+git add .
+git commit -m "Fix bug in $(git ls-files --full-name commit-message.txt)"
 mvn clean deploy -P nexus
 mvn clean deploy -P github
-mvn clean deploy -P central
-```
 
+```
+mvn clean deploy -P central
 ## SonarQube Analysis
 
 To run SonarQube analysis, you need to have a SonarQube token. This token should be stored in a `.env` file in the root directory of the project with the following format:

@@ -1,7 +1,8 @@
 package io.joshuasalcedo.library.prettyconsole.format.text;
 
-import io.joshuasalcedo.library.prettyconsole.api.MessageFormat;
 import io.joshuasalcedo.library.prettyconsole.PrettyStyle;
+import io.joshuasalcedo.library.prettyconsole.api.MessageFormat;
+
 import java.util.HashMap;
 import java.util.Map;
 

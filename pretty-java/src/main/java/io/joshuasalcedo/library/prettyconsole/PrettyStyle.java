@@ -1,11 +1,18 @@
 package io.joshuasalcedo.library.prettyconsole;
 
+import io.joshuasalcedo.library.prettyconsole.style.Style;
 import io.joshuasalcedo.library.prettyconsole.utils.TerminalUtils;
 import lombok.Data;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -279,9 +286,9 @@ public final class PrettyStyle {
          * @param background Whether this is a background color
          */
         public RgbColor(int r, int g, int b, boolean background) {
-            this.r = Math.max(0, Math.min(255, r));
-            this.g = Math.max(0, Math.min(255, g));
-            this.b = Math.max(0, Math.min(255, b));
+            this.r = Math.clamp(r, 0, 255);
+            this.g = Math.clamp(g, 0, 255);
+            this.b = Math.clamp(b, 0, 255);
             this.background = background;
         }
 
@@ -356,7 +363,7 @@ public final class PrettyStyle {
          * @param background Whether this is a background color
          */
         public Color256(int colorCode, boolean background) {
-            this.colorCode = Math.max(0, Math.min(255, colorCode));
+            this.colorCode = Math.clamp(colorCode, 0, 255);
             this.background = background;
         }
 
@@ -1010,6 +1017,9 @@ public final class PrettyStyle {
 
     /**
      * Convert a hex color code to an RGB color.
+     * 
+     * Note: This implementation is duplicated in Style.java.
+     * Any changes here should be reflected there as well.
      *
      * @param hexColor The hex color code (e.g., "#FF5500" or "FF5500")
      * @return A new RGB color object, or null if the input is invalid
@@ -1049,9 +1059,9 @@ public final class PrettyStyle {
      */
     public static String rgbToHex(int r, int g, int b) {
         return String.format("#%02X%02X%02X",
-                Math.max(0, Math.min(255, r)),
-                Math.max(0, Math.min(255, g)),
-                Math.max(0, Math.min(255, b)));
+                Math.clamp(r, 0, 255),
+                Math.clamp(g, 0, 255),
+                Math.clamp(b, 0, 255));
     }
 
     /**
@@ -1062,6 +1072,21 @@ public final class PrettyStyle {
      */
     public static String rgbToHex(RgbColor color) {
         return rgbToHex(color.getRed(), color.getGreen(), color.getBlue());
+    }
+
+    /**
+     * Interpolate between two RGB colors based on a ratio.
+     *
+     * @param startColor The starting color
+     * @param endColor The ending color
+     * @param ratio The interpolation ratio (0.0 to 1.0)
+     * @return The interpolated RGB color
+     */
+    private static RgbColor interpolateColor(RgbColor startColor, RgbColor endColor, double ratio) {
+        int r = (int) (startColor.getRed() + ratio * (endColor.getRed() - startColor.getRed()));
+        int g = (int) (startColor.getGreen() + ratio * (endColor.getGreen() - startColor.getGreen()));
+        int b = (int) (startColor.getBlue() + ratio * (endColor.getBlue() - startColor.getBlue()));
+        return new RgbColor(r, g, b);
     }
 
     /**
@@ -1082,11 +1107,7 @@ public final class PrettyStyle {
 
         for (int i = 0; i < length; i++) {
             double ratio = (double) i / (length - 1);
-            int r = (int) (startColor.getRed() + ratio * (endColor.getRed() - startColor.getRed()));
-            int g = (int) (startColor.getGreen() + ratio * (endColor.getGreen() - startColor.getGreen()));
-            int b = (int) (startColor.getBlue() + ratio * (endColor.getBlue() - startColor.getBlue()));
-
-            RgbColor color = new RgbColor(r, g, b);
+            RgbColor color = interpolateColor(startColor, endColor, ratio);
             result.append(color.apply(Character.toString(text.charAt(i))));
         }
 
@@ -1129,11 +1150,7 @@ public final class PrettyStyle {
                 RgbColor start = rainbow[index];
                 RgbColor end = rainbow[index + 1];
 
-                int r = (int) (start.getRed() + ratio * (end.getRed() - start.getRed()));
-                int g = (int) (start.getGreen() + ratio * (end.getGreen() - start.getGreen()));
-                int b = (int) (start.getBlue() + ratio * (end.getBlue() - start.getBlue()));
-
-                RgbColor color = new RgbColor(r, g, b);
+                RgbColor color = interpolateColor(start, end, ratio);
                 result.append(color.apply(Character.toString(text.charAt(i))));
             } else {
                 // Last color
@@ -1174,20 +1191,41 @@ public final class PrettyStyle {
             frames = new String[]{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
         }
 
-        long startTime = System.currentTimeMillis();
-        long endTime = startTime + durationMs;
-        int frameIndex = 0;
+        // Use a CountDownLatch to wait for the animation to complete
+        final CountDownLatch latch = new CountDownLatch(1);
 
-        while (System.currentTimeMillis() < endTime) {
-            String frame = frames[frameIndex];
-            System.out.print("\r" + frame + " " + message);
-            Thread.sleep(frameMs);
+        // Create a scheduled executor to handle the animation frames
+        final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-            frameIndex = (frameIndex + 1) % frames.length;
-        }
+        // Make a final copy of frames for use in the lambda
+        final String[] finalFrames = frames;
 
-        // Clear the line
-        System.out.print("\r" + " ".repeat(message.length() + 2) + "\r");
+        // Track frame index in an atomic reference to be thread-safe
+        final AtomicInteger frameIndex = new AtomicInteger(0);
+
+        // Schedule the animation task
+        final ScheduledFuture<?> animationTask = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                int currentIndex = frameIndex.getAndUpdate(i -> (i + 1) % finalFrames.length);
+                String frame = finalFrames[currentIndex];
+                System.out.print("\r" + frame + " " + message);
+            } catch (Exception e) {
+                // Handle any exceptions in the animation task
+                e.printStackTrace();
+            }
+        }, 0, frameMs, TimeUnit.MILLISECONDS);
+
+        // Schedule the task to stop the animation after the duration
+        scheduler.schedule(() -> {
+            animationTask.cancel(false);
+            // Clear the line
+            System.out.print("\r" + " ".repeat(message.length() + 2) + "\r");
+            scheduler.shutdown();
+            latch.countDown();
+        }, durationMs, TimeUnit.MILLISECONDS);
+
+        // Wait for the animation to complete
+        latch.await();
     }
 
     /**

@@ -1,15 +1,11 @@
 package io.joshuasalcedo.library.prettyconsole;
 
 import io.joshuasalcedo.library.prettyconsole.api.MessageFormat;
-import io.joshuasalcedo.library.prettyconsole.api.TextFormat;
-import io.joshuasalcedo.library.prettyconsole.api.VisualFormat;
 import io.joshuasalcedo.library.prettyconsole.format.FormatFactory;
 import io.joshuasalcedo.library.prettyconsole.format.layout.BoxFormat;
 import io.joshuasalcedo.library.prettyconsole.format.layout.DividerFormat;
 import io.joshuasalcedo.library.prettyconsole.format.progress.ProgressBarFormat;
-import io.joshuasalcedo.library.prettyconsole.format.progress.ProgressBarRunner;
 import io.joshuasalcedo.library.prettyconsole.format.text.MessageType;
-import io.joshuasalcedo.library.prettyconsole.style.ForegroundColor;
 import lombok.Getter;
 
 /**

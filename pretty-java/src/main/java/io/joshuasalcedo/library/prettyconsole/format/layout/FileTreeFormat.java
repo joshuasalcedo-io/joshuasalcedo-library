@@ -5,8 +5,6 @@ import io.joshuasalcedo.library.prettyconsole.core.file.PrettyFile;
 import io.joshuasalcedo.library.prettyconsole.core.file.PrettyFileTreeNode;
 import io.joshuasalcedo.library.prettyconsole.format.VisualizationType;
 import io.joshuasalcedo.library.prettyconsole.style.ForegroundColor;
-import io.joshuasalcedo.library.prettyconsole.style.Style;
-import io.joshuasalcedo.library.prettyconsole.utils.TextUtils;
 
 import java.io.File;
 import java.io.FileFilter;

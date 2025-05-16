@@ -5,6 +5,7 @@ import io.joshuasalcedo.library.prettyconsole.style.Style;
 import io.joshuasalcedo.library.prettyconsole.style.StyleFormatter;
 import io.joshuasalcedo.library.prettyconsole.style.TextStyle;
 import io.joshuasalcedo.library.prettyconsole.utils.FileUtils;
+import lombok.Getter;
 
 import java.io.*;
 import java.net.URI;
@@ -13,9 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import lombok.Getter;
 
 /**
  * An extension of File that provides styling and visualization capabilities.
@@ -535,6 +534,51 @@ public class PrettyFile extends File {
     @Override
     public String toString() {
         return getFormattedName();
+    }
+
+    /**
+     * Compares this PrettyFile with another object for equality.
+     * Two PrettyFile objects are considered equal if they refer to the same file
+     * and have the same formatting settings.
+     *
+     * @param obj The object to compare with
+     * @return true if the objects are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof PrettyFile other)) {
+            return false;
+        }
+        // First check if the underlying File objects are equal
+        if (!super.equals(obj)) {
+            return false;
+        }
+        // Then check the additional fields
+        return showIcon == other.showIcon &&
+               useFormatting == other.useFormatting &&
+               fileColor == other.fileColor &&
+               dirColor == other.dirColor &&
+               style == other.style;
+    }
+
+    /**
+     * Returns a hash code for this PrettyFile.
+     * The hash code is based on the underlying File and the formatting settings.
+     *
+     * @return A hash code value for this object
+     */
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (showIcon ? 1 : 0);
+        result = 31 * result + (useFormatting ? 1 : 0);
+        result = 31 * result + (fileColor != null ? fileColor.hashCode() : 0);
+        result = 31 * result + (dirColor != null ? dirColor.hashCode() : 0);
+        result = 31 * result + (style != null ? style.hashCode() : 0);
+        return result;
     }
 
     // Additional file-related utility methods

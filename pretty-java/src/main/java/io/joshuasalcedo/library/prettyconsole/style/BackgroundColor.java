@@ -11,7 +11,7 @@ package io.joshuasalcedo.library.prettyconsole.style;
  * @author JoshuaSalcedo
  * @since 2.0.0
  */
-public enum BackgroundColor implements StyleComponent {
+public enum BackgroundColor implements Color {
     // Standard backgrounds
     BLACK(40, "Black background"),
     RED(41, "Red background"),
@@ -95,5 +95,105 @@ public enum BackgroundColor implements StyleComponent {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the color type of this color.
+     *
+     * @return ColorType.ANSI
+     */
+    @Override
+    public ColorType getColorType() {
+        return ColorType.ANSI;
+    }
+
+    /**
+     * Check if this is a background color.
+     *
+     * @return true (always a background color)
+     */
+    @Override
+    public boolean isBackground() {
+        return true;
+    }
+
+    /**
+     * Convert this color to a background color.
+     *
+     * @return this (already a background color)
+     */
+    @Override
+    public Color asBackground() {
+        return this;
+    }
+
+    /**
+     * Convert this color to a foreground color.
+     *
+     * @return the corresponding ForegroundColor
+     */
+    @Override
+    public Color asForeground() {
+        // Convert background color to foreground color
+        // Foreground colors are typically background - 10
+        return ForegroundColor.fromValue(value - 10);
+    }
+
+    /**
+     * Convert this color to an RGB color.
+     *
+     * @return an RGB representation of this color
+     */
+    @Override
+    public Color toRgb() {
+        // Convert ANSI color to RGB with background=true
+        switch (this) {
+            case BLACK: return new RgbColor(0, 0, 0, true);
+            case RED: return new RgbColor(170, 0, 0, true);
+            case GREEN: return new RgbColor(0, 170, 0, true);
+            case YELLOW: return new RgbColor(170, 170, 0, true);
+            case BLUE: return new RgbColor(0, 0, 170, true);
+            case PURPLE: return new RgbColor(170, 0, 170, true);
+            case CYAN: return new RgbColor(0, 170, 170, true);
+            case WHITE: return new RgbColor(170, 170, 170, true);
+            case BRIGHT_BLACK: return new RgbColor(85, 85, 85, true);
+            case BRIGHT_RED: return new RgbColor(255, 85, 85, true);
+            case BRIGHT_GREEN: return new RgbColor(85, 255, 85, true);
+            case BRIGHT_YELLOW: return new RgbColor(255, 255, 85, true);
+            case BRIGHT_BLUE: return new RgbColor(85, 85, 255, true);
+            case BRIGHT_PURPLE: return new RgbColor(255, 85, 255, true);
+            case BRIGHT_CYAN: return new RgbColor(85, 255, 255, true);
+            case BRIGHT_WHITE: return new RgbColor(255, 255, 255, true);
+            default: return new RgbColor(0, 0, 0, true); // Default to black
+        }
+    }
+
+    /**
+     * Convert this color to a 256-color.
+     *
+     * @return a 256-color representation of this color
+     */
+    @Override
+    public Color to256Color() {
+        // Convert ANSI color to 256-color with background=true
+        switch (this) {
+            case BLACK: return new Color256(0, true);
+            case RED: return new Color256(1, true);
+            case GREEN: return new Color256(2, true);
+            case YELLOW: return new Color256(3, true);
+            case BLUE: return new Color256(4, true);
+            case PURPLE: return new Color256(5, true);
+            case CYAN: return new Color256(6, true);
+            case WHITE: return new Color256(7, true);
+            case BRIGHT_BLACK: return new Color256(8, true);
+            case BRIGHT_RED: return new Color256(9, true);
+            case BRIGHT_GREEN: return new Color256(10, true);
+            case BRIGHT_YELLOW: return new Color256(11, true);
+            case BRIGHT_BLUE: return new Color256(12, true);
+            case BRIGHT_PURPLE: return new Color256(13, true);
+            case BRIGHT_CYAN: return new Color256(14, true);
+            case BRIGHT_WHITE: return new Color256(15, true);
+            default: return new Color256(0, true); // Default to black
+        }
     }
 }

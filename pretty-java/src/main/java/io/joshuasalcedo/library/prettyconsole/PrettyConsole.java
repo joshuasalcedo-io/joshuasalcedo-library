@@ -1,15 +1,6 @@
 package io.joshuasalcedo.library.prettyconsole;
 
-import io.joshuasalcedo.library.prettyconsole.style.BackgroundColor;
-import io.joshuasalcedo.library.prettyconsole.style.Color256;
-import io.joshuasalcedo.library.prettyconsole.style.ForegroundColor;
-import io.joshuasalcedo.library.prettyconsole.style.RgbColor;
-import io.joshuasalcedo.library.prettyconsole.style.Style;
-import io.joshuasalcedo.library.prettyconsole.style.StyleComponent;
-import io.joshuasalcedo.library.prettyconsole.style.StyleFormatter;
-import io.joshuasalcedo.library.prettyconsole.style.StringDecorator;
-import io.joshuasalcedo.library.prettyconsole.style.TextStyle;
-import io.joshuasalcedo.library.prettyconsole.utils.TerminalUtils;
+import io.joshuasalcedo.library.prettyconsole.style.*;
 
 /**
  * Enhanced terminal formatting system for console output styling.
@@ -236,9 +227,9 @@ public final class PrettyConsole {
      */
     public static String rgbToHex(int r, int g, int b) {
         return String.format("#%02X%02X%02X",
-                Math.max(RGB_MIN_VALUE, Math.min(RGB_MAX_VALUE, r)),
-                Math.max(RGB_MIN_VALUE, Math.min(RGB_MAX_VALUE, g)),
-                Math.max(RGB_MIN_VALUE, Math.min(RGB_MAX_VALUE, b)));
+                Math.clamp(r, RGB_MIN_VALUE, RGB_MAX_VALUE),
+                Math.clamp(g, RGB_MIN_VALUE, RGB_MAX_VALUE),
+                Math.clamp(b, RGB_MIN_VALUE, RGB_MAX_VALUE));
     }
 
     /**

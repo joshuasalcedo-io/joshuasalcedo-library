@@ -1,0 +1,36 @@
+feat(style): Consolidate color implementation code
+
+This commit implements task #6 from the refactoring plan: "Consolidate color implementation code".
+
+The changes unify the RGB and 256-color implementations, establish a consistent color handling approach, and optimize color selection for different terminal types.
+
+Key changes:
+
+1. Created a unified color model:
+   - Added a new `ColorType` enum to categorize colors (ANSI, 256-color, RGB)
+   - Created a unified `Color` interface that extends `StyleComponent`
+   - Updated all color classes to implement the `Color` interface:
+     - `RgbColor`
+     - `Color256`
+     - `ForegroundColor`
+     - `BackgroundColor`
+
+2. Added conversion methods between color types:
+   - `toRgb()`: Convert any color to RGB format
+   - `to256Color()`: Convert any color to 256-color format
+   - `asBackground()`: Convert any color to a background color
+   - `asForeground()`: Convert any color to a foreground color
+
+3. Implemented terminal capability-aware color selection:
+   - Added `getBestColorForTerminal()` method to automatically select the best color format
+   - Created a `ColorConverter` utility class for color conversion and optimization
+   - Added methods to find the closest color in a different format
+
+4. Ensured consistent color handling approach:
+   - All color classes now follow the same patterns and conventions
+   - Consistent methods for creating and manipulating colors
+   - Unified approach to foreground/background distinction
+
+These changes reduce code duplication, improve maintainability, and enhance the user experience by automatically selecting the best color format based on terminal capabilities. The unified color model also makes it easier to add new color formats in the future.
+
+The implementation follows the Single Responsibility Principle by separating color type detection, color conversion, and color application into distinct components. It also follows the Open/Closed Principle by allowing for extension with new color types without modifying existing code.

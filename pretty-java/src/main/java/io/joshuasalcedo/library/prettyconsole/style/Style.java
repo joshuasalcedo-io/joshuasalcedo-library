@@ -1,6 +1,7 @@
 package io.joshuasalcedo.library.prettyconsole.style;
 
-import java.util.regex.Pattern;
+import io.joshuasalcedo.library.prettyconsole.style.color.ColorConverter;
+import io.joshuasalcedo.library.prettyconsole.style.core.AnsiConstants;
 
 /**
  * Utility class for applying styles to text.
@@ -13,16 +14,6 @@ import java.util.regex.Pattern;
  * @since 2.0.0
  */
 public final class Style {
-
-    /**
-     * ANSI reset code that returns terminal to default state.
-     */
-    public static final String RESET = "\033[0m";
-
-    /**
-     * ANSI CSI (Control Sequence Introducer) prefix for all ANSI escape sequences.
-     */
-    public static final String CSI = "\033[";
 
     /**
      * Create an RGB foreground color.
@@ -86,7 +77,7 @@ public final class Style {
      * @return The formatted text with reset code at the end
      */
     public static String apply(StyleComponent component, String text) {
-        return component.apply(text);
+        return StyleManager.apply(component, text);
     }
 
     /**
@@ -97,7 +88,7 @@ public final class Style {
      * @return The formatted text with reset code at the end
      */
     public static String apply(StyleFormatter formatter, String text) {
-        return formatter.apply(text);
+        return StyleManager.apply(formatter, text);
     }
 
     /**
@@ -108,7 +99,7 @@ public final class Style {
      * @return The formatted text if supported, the original text otherwise
      */
     public static String safeApply(StyleComponent component, String text) {
-        return component.safeApply(text);
+        return StyleManager.safeApply(component, text);
     }
 
     /**
@@ -119,7 +110,7 @@ public final class Style {
      * @return The formatted text if supported, the original text otherwise
      */
     public static String safeApply(StyleFormatter formatter, String text) {
-        return formatter.safeApply(text);
+        return StyleManager.safeApply(formatter, text);
     }
 
     /**
@@ -129,46 +120,17 @@ public final class Style {
      * @return The text without any ANSI codes
      */
     public static String stripAnsi(String text) {
-        if (text == null) {
-            return null;
-        }
-        // Pattern to match ANSI escape sequences
-        Pattern pattern = Pattern.compile("\u001B\\[[;\\d]*[ -/]*[@-~]");
-        return pattern.matcher(text).replaceAll("");
+        return StyleManager.stripAnsi(text);
     }
 
     /**
      * Convert a hex color code to an RGB color.
-     * 
-     * Note: This implementation is duplicated in PrettyStyle.java.
-     * Any changes here should be reflected there as well.
      *
      * @param hexColor The hex color code (e.g., "#FF5500" or "FF5500")
      * @return A new RGB color object, or null if the input is invalid
      */
     public static RgbColor hexToRgb(String hexColor) {
-        if (hexColor == null || hexColor.isEmpty()) {
-            return null;
-        }
-
-        // Remove # if present
-        if (hexColor.startsWith("#")) {
-            hexColor = hexColor.substring(1);
-        }
-
-        // Check length
-        if (hexColor.length() != 6) {
-            return null;
-        }
-
-        try {
-            int r = Integer.parseInt(hexColor.substring(0, 2), 16);
-            int g = Integer.parseInt(hexColor.substring(2, 4), 16);
-            int b = Integer.parseInt(hexColor.substring(4, 6), 16);
-            return new RgbColor(r, g, b);
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return ColorConverter.hexToRgb(hexColor);
     }
 
     /**
@@ -180,10 +142,7 @@ public final class Style {
      * @return A hex color code string
      */
     public static String rgbToHex(int r, int g, int b) {
-        return String.format("#%02X%02X%02X",
-                Math.clamp(r, 0, 255),
-                Math.clamp(g, 0, 255),
-                Math.clamp(b, 0, 255));
+        return ColorConverter.rgbToHex(r, g, b);
     }
 
     /**
@@ -193,7 +152,7 @@ public final class Style {
      * @return A hex color code string
      */
     public static String rgbToHex(RgbColor color) {
-        return rgbToHex(color.getRed(), color.getGreen(), color.getBlue());
+        return ColorConverter.rgbToHex(color);
     }
 
     /**

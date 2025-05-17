@@ -1,4 +1,4 @@
-package io.joshuasalcedo.library.prettyconsole.util;
+package io.joshuasalcedo.pretty.core.utils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

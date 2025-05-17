@@ -1,11 +1,11 @@
-package io.joshuasalcedo.pretty.core.theme;
+package io.joshuasalcedo.pretty.core.model.stream;
 
 import io.joshuasalcedo.pretty.core.properties.RGBColor;
+import io.joshuasalcedo.pretty.core.theme.TerminalStyle;
 import io.joshuasalcedo.pretty.core.utils.TerminalUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.Locale;
 
 /**
  * A PrintStream implementation that supports RGB color formatting for terminal output.

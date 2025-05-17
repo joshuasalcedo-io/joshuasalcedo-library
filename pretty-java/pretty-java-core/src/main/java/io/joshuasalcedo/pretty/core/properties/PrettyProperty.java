@@ -1,4 +1,3 @@
 package io.joshuasalcedo.pretty.core.properties;
 
-public class PrettyProperty {
-}
+import io.joshuasalcedo.pretty.core.utils.TerminalUtils;

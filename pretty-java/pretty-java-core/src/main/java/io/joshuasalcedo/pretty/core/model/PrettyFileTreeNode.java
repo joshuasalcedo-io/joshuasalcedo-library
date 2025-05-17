@@ -1,10 +1,12 @@
-package io.joshuasalcedo.pretty.core.theme;
+package io.joshuasalcedo.pretty.core.model;
 
+import io.joshuasalcedo.pretty.core.model.file.PrettyFile;
+import io.joshuasalcedo.pretty.core.model.stream.PrettyPrintStream;
 import io.joshuasalcedo.pretty.core.properties.RGBColor;
+import io.joshuasalcedo.pretty.core.theme.TerminalStyle;
 import lombok.Data;
 
-import java.io.FileFilter;
-import java.io.FilenameFilter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -315,9 +317,6 @@ public class PrettyFileTreeNode {
         return new PrettyFile(file.getAbsolutePath());
     }
 
-    /**
-     * Demonstrates the PrettyFileTreeNode capabilities.
-     */
     public static void main(String[] args) {
         // Create a PrettyFile for the current directory
         PrettyFile rootFile = new PrettyFile(System.getProperty("user.dir"))
@@ -328,50 +327,112 @@ public class PrettyFileTreeNode {
                 )
                 .withBold(true);
 
-        // Create a tree node for the root file
-        PrettyFileTreeNode root = new PrettyFileTreeNode(rootFile);
-
-        // Configure tree appearance
-        root.withBranchColor(RGBColor.of(180, 180, 180))
-                .withLeafBranchColor(RGBColor.of(100, 180, 100))
-                .withColoredBranches(true);
-
-        // Build the tree with a depth limit of 3
-        root.buildTree(3);
-
         // Create a PrettyPrintStream to display the tree
         PrettyPrintStream out = new PrettyPrintStream(System.out);
 
-        // Print a header
+        // Example of non-hidden and non-gitignored files tree
         out.foreground(RGBColor.fromHex("#FFD700")).bold(true)
-                .println("=== File System Tree ===");
+                .println("=== Clean File System Tree (No Hidden or Gitignored Files) ===");
 
-        // Print the tree
-        root.printTree(out);
+        // Create a new tree node for the filtered files
+        PrettyFileTreeNode cleanRoot = new PrettyFileTreeNode(rootFile);
 
-        // Reset formatting
-        out.reset();
-
-        // Example of filtered tree
-        out.foreground(RGBColor.fromHex("#FFD700")).bold(true)
-                .println("\n=== Java Files Only ===");
-
-        // Create a new tree node for Java files
-        PrettyFileTreeNode javaRoot = new PrettyFileTreeNode(rootFile);
-
-        // Configure tree appearance with different colors
-        javaRoot.withBranchColor(RGBColor.of(180, 180, 180))
-                .withLeafBranchColor(RGBColor.of(180, 100, 100))
+        // Configure tree appearance
+        cleanRoot.withBranchColor(RGBColor.of(180, 180, 180))
+                .withLeafBranchColor(RGBColor.of(100, 180, 100))
                 .withColoredBranches(true);
 
-        // Build a filtered tree that only includes Java files
-        javaRoot.buildTreeFiltered(3, file ->
-                file.isDirectory() || file.getName().toLowerCase().endsWith(".java"));
+        // Create a GitignoreFilter that combines hidden file detection and gitignore rules
+        FileFilter cleanFileFilter = new FileFilter() {
+            private GitignoreFilter gitignoreFilter;
+
+            {
+                // Initialize gitignore filter (look for .gitignore in current directory)
+                try {
+                    File gitignoreFile = new File(System.getProperty("user.dir"), ".gitignore");
+                    if (gitignoreFile.exists()) {
+                        gitignoreFilter = new GitignoreFilter(gitignoreFile);
+                    }
+                } catch (IOException e) {
+                    System.err.println("Error loading .gitignore: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public boolean accept(File file) {
+                // Reject hidden files and directories
+                if (file.getName().startsWith(".")) {
+                    return false;
+                }
+
+                // If gitignore filter exists, apply it
+                if (gitignoreFilter != null) {
+                    return gitignoreFilter.accept(file);
+                }
+
+                // No gitignore filter, accept all non-hidden files
+                return true;
+            }
+        };
+
+        // Build a filtered tree
+        cleanRoot.buildTreeFiltered(Integer.MAX_VALUE, cleanFileFilter);
 
         // Print the filtered tree
-        javaRoot.printTree(out);
+        cleanRoot.printTree(out);
 
         // Reset formatting
         out.reset();
+    }
+
+    /**
+     * Helper class to filter files based on .gitignore patterns.
+     * This is a simplified implementation and doesn't handle all gitignore pattern types.
+     */
+    static class GitignoreFilter {
+        private List<String> patterns = new ArrayList<>();
+
+        public GitignoreFilter(File gitignoreFile) throws IOException {
+            try (BufferedReader reader = new BufferedReader(new FileReader(gitignoreFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Skip empty lines and comments
+                    if (!line.trim().isEmpty() && !line.startsWith("#")) {
+                        patterns.add(line.trim());
+                    }
+                }
+            }
+        }
+
+        public boolean accept(File file) {
+            String path = file.getPath();
+
+            // Normalize path separators
+            path = path.replace("\\", "/");
+
+            // Check each pattern
+            for (String pattern : patterns) {
+                // Handle wildcard patterns (this is simplified)
+                if (pattern.endsWith("/*")) {
+                    String dir = pattern.substring(0, pattern.length() - 2);
+                    if (path.startsWith(dir + "/")) {
+                        return false;
+                    }
+                }
+                // Handle extension patterns
+                else if (pattern.startsWith("*.")) {
+                    String ext = pattern.substring(1);
+                    if (file.getName().endsWith(ext)) {
+                        return false;
+                    }
+                }
+                // Handle exact matches
+                else if (path.endsWith("/" + pattern) || file.getName().equals(pattern)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

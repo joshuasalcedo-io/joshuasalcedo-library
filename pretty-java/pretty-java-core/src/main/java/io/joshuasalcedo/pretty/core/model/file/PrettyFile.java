@@ -1,6 +1,8 @@
-package io.joshuasalcedo.pretty.core.theme;
+package io.joshuasalcedo.pretty.core.model.file;
 
+import io.joshuasalcedo.pretty.core.model.stream.PrettyPrintStream;
 import io.joshuasalcedo.pretty.core.properties.RGBColor;
+import io.joshuasalcedo.pretty.core.theme.TerminalStyle;
 import io.joshuasalcedo.pretty.core.utils.FileUtils;
 import io.joshuasalcedo.pretty.core.utils.TerminalUtils;
 import lombok.Getter;

@@ -1,6 +1,8 @@
 package io.joshuasalcedo.library.prettyconsole;
 
 import io.joshuasalcedo.library.prettyconsole.style.*;
+import io.joshuasalcedo.library.prettyconsole.style.color.ColorConverter;
+import io.joshuasalcedo.library.prettyconsole.style.core.AnsiConstants;
 
 /**
  * Enhanced terminal formatting system for console output styling.
@@ -37,42 +39,6 @@ import io.joshuasalcedo.library.prettyconsole.style.*;
  * @since 2.0.0
  */
 public final class PrettyConsole {
-
-    /**
-     * Resets all formatting and returns to default console output.
-     * Should be used after any formatting sequence.
-     */
-    public static final String RESET = "\033[0m";
-
-    /**
-     * ANSI CSI (Control Sequence Introducer) prefix for all ANSI escape sequences
-     */
-    public static final String CSI = "\033[";
-
-    /**
-     * Standard length of a hex color code without the # prefix
-     */
-    private static final int HEX_COLOR_LENGTH = 6;
-
-    /**
-     * Minimum value for RGB color components
-     */
-    private static final int RGB_MIN_VALUE = 0;
-
-    /**
-     * Maximum value for RGB color components
-     */
-    private static final int RGB_MAX_VALUE = 255;
-
-    /**
-     * Index constants for hex color parsing
-     */
-    private static final int RED_START_INDEX = 0;
-    private static final int RED_END_INDEX = 2;
-    private static final int GREEN_START_INDEX = 2;
-    private static final int GREEN_END_INDEX = 4;
-    private static final int BLUE_START_INDEX = 4;
-    private static final int BLUE_END_INDEX = 6;
 
     /**
      * Create an RGB foreground color.
@@ -136,7 +102,7 @@ public final class PrettyConsole {
      * @return The formatted text with reset code at the end
      */
     public static String apply(StyleComponent component, String text) {
-        return Style.apply(component, text);
+        return StyleManager.apply(component, text);
     }
 
     /**
@@ -147,7 +113,7 @@ public final class PrettyConsole {
      * @return The formatted text with reset code at the end
      */
     public static String apply(StyleFormatter formatter, String text) {
-        return Style.apply(formatter, text);
+        return StyleManager.apply(formatter, text);
     }
 
     /**
@@ -158,7 +124,7 @@ public final class PrettyConsole {
      * @return The formatted text if supported, the original text otherwise
      */
     public static String safeApply(StyleComponent component, String text) {
-        return Style.safeApply(component, text);
+        return StyleManager.safeApply(component, text);
     }
 
     /**
@@ -169,7 +135,7 @@ public final class PrettyConsole {
      * @return The formatted text if supported, the original text otherwise
      */
     public static String safeApply(StyleFormatter formatter, String text) {
-        return Style.safeApply(formatter, text);
+        return StyleManager.safeApply(formatter, text);
     }
 
     /**
@@ -179,11 +145,7 @@ public final class PrettyConsole {
      * @return The text without any ANSI codes
      */
     public static String stripAnsi(String text) {
-        if (text == null) {
-            return null;
-        }
-        // Pattern to match ANSI escape sequences
-        return text.replaceAll("\u001B\\[[;\\d]*[ -/]*[@-~]", "");
+        return StyleManager.stripAnsi(text);
     }
 
     /**
@@ -193,28 +155,7 @@ public final class PrettyConsole {
      * @return A new RGB color object, or null if the input is invalid
      */
     public static RgbColor hexToRgb(String hexColor) {
-        if (hexColor == null || hexColor.isEmpty()) {
-            return null;
-        }
-
-        // Remove # if present
-        if (hexColor.startsWith("#")) {
-            hexColor = hexColor.substring(1);
-        }
-
-        // Check length
-        if (hexColor.length() != HEX_COLOR_LENGTH) {
-            return null;
-        }
-
-        try {
-            int r = Integer.parseInt(hexColor.substring(RED_START_INDEX, RED_END_INDEX), 16);
-            int g = Integer.parseInt(hexColor.substring(GREEN_START_INDEX, GREEN_END_INDEX), 16);
-            int b = Integer.parseInt(hexColor.substring(BLUE_START_INDEX, BLUE_END_INDEX), 16);
-            return new RgbColor(r, g, b);
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        return ColorConverter.hexToRgb(hexColor);
     }
 
     /**
@@ -226,10 +167,7 @@ public final class PrettyConsole {
      * @return A hex color code string
      */
     public static String rgbToHex(int r, int g, int b) {
-        return String.format("#%02X%02X%02X",
-                Math.clamp(r, RGB_MIN_VALUE, RGB_MAX_VALUE),
-                Math.clamp(g, RGB_MIN_VALUE, RGB_MAX_VALUE),
-                Math.clamp(b, RGB_MIN_VALUE, RGB_MAX_VALUE));
+        return ColorConverter.rgbToHex(r, g, b);
     }
 
     /**
@@ -239,7 +177,7 @@ public final class PrettyConsole {
      * @return A hex color code string
      */
     public static String rgbToHex(RgbColor color) {
-        return rgbToHex(color.getRed(), color.getGreen(), color.getBlue());
+        return ColorConverter.rgbToHex(color);
     }
 
     // Private constructor to prevent instantiation

@@ -274,7 +274,7 @@ public class ProgressBarRunner {
      *
      * @param indeterminate Whether the progress is indeterminate
      */
-    public void setIndeterminate(boolean indeterminate) {
+    public void withIndeterminate(boolean indeterminate) {
         this.indeterminate.set(indeterminate);
     }
 

@@ -1,5 +1,6 @@
 package io.joshuasalcedo.library.prettyconsole.style;
 
+import io.joshuasalcedo.library.prettyconsole.style.core.AnsiConstants;
 import io.joshuasalcedo.library.prettyconsole.utils.TerminalUtils;
 
 /**
@@ -19,12 +20,12 @@ public abstract class AbstractStyleComponent implements StyleComponent {
     /**
      * ANSI reset code that returns terminal to default state.
      */
-    protected static final String RESET = "\033[0m";
+    protected static final String RESET = AnsiConstants.RESET;
 
     /**
      * ANSI CSI (Control Sequence Introducer) prefix for all ANSI escape sequences.
      */
-    protected static final String CSI = "\033[";
+    protected static final String CSI = AnsiConstants.CSI;
 
     @Override
     public String apply(String text) {

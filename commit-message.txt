@@ -1,36 +1,42 @@
-feat(style): Consolidate color implementation code
+docs(core): Add comprehensive README for pretty-java-core
 
-This commit implements task #6 from the refactoring plan: "Consolidate color implementation code".
+This commit adds a detailed README.md file for the pretty-java-core library, providing comprehensive documentation for users and contributors.
 
-The changes unify the RGB and 256-color implementations, establish a consistent color handling approach, and optimize color selection for different terminal types.
+The README serves as both a quick-start guide and a reference document, making it easier for developers to understand and use the library's features.
 
-Key changes:
+Key components:
 
-1. Created a unified color model:
-   - Added a new `ColorType` enum to categorize colors (ANSI, 256-color, RGB)
-   - Created a unified `Color` interface that extends `StyleComponent`
-   - Updated all color classes to implement the `Color` interface:
-     - `RgbColor`
-     - `Color256`
-     - `ForegroundColor`
-     - `BackgroundColor`
+1. Overview and Introduction:
+   - Clear description of the library's purpose and capabilities
+   - Summary of key features and benefits
+   - Quick overview of what the library can do
 
-2. Added conversion methods between color types:
-   - `toRgb()`: Convert any color to RGB format
-   - `to256Color()`: Convert any color to 256-color format
-   - `asBackground()`: Convert any color to a background color
-   - `asForeground()`: Convert any color to a foreground color
+2. Installation Instructions:
+   - Maven dependency configuration
+   - Gradle dependency configuration
+   - Version information
 
-3. Implemented terminal capability-aware color selection:
-   - Added `getBestColorForTerminal()` method to automatically select the best color format
-   - Created a `ColorConverter` utility class for color conversion and optimization
-   - Added methods to find the closest color in a different format
+3. Feature Documentation:
+   - Progress Indicators (Progress Bars, Spinners, Task Lists, Counters, etc.)
+   - Terminal Styling (RGB colors, formatting options, predefined styles)
+   - File Operations (visualization, pretty-printing)
 
-4. Ensured consistent color handling approach:
-   - All color classes now follow the same patterns and conventions
-   - Consistent methods for creating and manipulating colors
-   - Unified approach to foreground/background distinction
+4. Usage Examples:
+   - Basic Progress Bar implementation
+   - Task List implementation
+   - Styled Text Output examples
+   - Advanced features (Custom Spinners, Colored Progress Bars)
 
-These changes reduce code duplication, improve maintainability, and enhance the user experience by automatically selecting the best color format based on terminal capabilities. The unified color model also makes it easier to add new color formats in the future.
+5. API Documentation:
+   - Core Classes overview
+   - Progress Indicators classes
+   - Explanation of key components and their relationships
 
-The implementation follows the Single Responsibility Principle by separating color type detection, color conversion, and color application into distinct components. It also follows the Open/Closed Principle by allowing for extension with new color types without modifying existing code.
+6. Project Information:
+   - Contributing guidelines
+   - License information
+   - Contact details
+
+This documentation enhances the library's usability by providing clear examples and explanations of the library's features. It follows documentation best practices with a logical structure, code examples, and comprehensive coverage of the library's capabilities.
+
+The README will help new users get started quickly while serving as a reference for more experienced users, ultimately improving the adoption and effective use of the pretty-java-core library.

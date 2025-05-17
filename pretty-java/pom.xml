@@ -11,9 +11,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-
+    <packaging>pom</packaging>
     <artifactId>pretty-java</artifactId>
-
+    <modules>
+        <module>pretty-java-core</module>
+    </modules>
 
 
 

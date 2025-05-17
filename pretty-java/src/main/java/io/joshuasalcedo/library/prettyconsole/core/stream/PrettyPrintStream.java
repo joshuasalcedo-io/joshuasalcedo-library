@@ -1,6 +1,7 @@
 package io.joshuasalcedo.library.prettyconsole.core.stream;
 
 import io.joshuasalcedo.library.prettyconsole.style.*;
+import io.joshuasalcedo.library.prettyconsole.style.core.AnsiConstants;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -94,27 +95,41 @@ public class PrettyPrintStream extends PrintStream {
      * @return The formatted text
      */
     private String format(String text) {
-        if (isABoolean()) {
+        // Early return if formatting is disabled or no styles are applied
+        if (!this.useFormatting || (color == null && style == null && background == null)) {
             return text;
         }
 
-        StyleFormatter formatter = new StyleFormatter();
-
+        // Use StringBuilder with precalculated capacity for optimal performance
+        StringBuilder sb = new StringBuilder(text.length() + 20); // Extra space for ANSI codes
+        
+        // Apply styles only once at the beginning
         if (style != null) {
-            formatter.withStyle(style);
+            sb.append(style.getCode());
         }
-
+        
         if (color != null) {
-            formatter.withColor(color);
+            sb.append(color.getCode());
         }
-
+        
         if (background != null) {
-            formatter.withBackground(background);
+            sb.append(background.getCode());
         }
-
-        return Style.safeApply(formatter, text);
+        
+        // Append text
+        sb.append(text)
+          .append(AnsiConstants.RESET);
+        
+        return sb.toString();
     }
 
+    /**
+     * Checks if formatting should be applied to the output.
+     *
+     * @return true if no formatting should be applied, false otherwise
+     * @deprecated This method is replaced by inline check in format()
+     */
+    @Deprecated
     private boolean isABoolean() {
         return !this.useFormatting || (color == null && style == null && background == null);
     }

@@ -35,17 +35,6 @@ package io.joshuasalcedo.pretty.core.api;
  * @see java.lang.System
  */
 public final class PrettySystem {
-    // Class implementation would go here
 
-    private  static native void registerNatives();
-
-    static {
-        registerNatives();
-    }
-
-    /**
-     * Prevents instantiation of the {@code PrettySystem} class.
-     */
-    PrettySystem() {}
 
 }

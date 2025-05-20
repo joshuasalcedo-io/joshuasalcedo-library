@@ -23,7 +23,7 @@ public class PrettyThrowable extends Throwable {
      * The terminal style to use for stack trace elements
      */
     private TerminalStyle stackTraceStyle = TerminalStyle.SECONDARY;
-    
+    ☺
     /**
      * The terminal style to use for "Caused by:" sections
      */

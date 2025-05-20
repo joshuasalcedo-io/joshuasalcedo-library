@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exception Report: PrettyException</title>
+    <style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+}
+.exception-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+.exception-header {
+    background-color: #e53935;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.exception-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+.exception-timestamp {
+    font-size: 14px;
+    opacity: 0.9;
+}
+.exception-summary {
+    padding: 20px;
+    background-color: #ffebee;
+    border-bottom: 1px solid #ffcdd2;
+}
+.exception-type {
+    font-family: 'Fira Code', 'Source Code Pro', monospace;
+    font-weight: bold;
+    font-size: 18px;
+    color: #b71c1c;
+    margin-bottom: 5px;
+}
+.exception-message {
+    font-size: 16px;
+    word-break: break-word;
+}
+.exception-section {
+    margin: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.section-header {
+    background-color: #f5f5f5;
+    padding: 10px 15px;
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+}
+.section-content {
+    padding: 15px;
+}
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.info-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+.info-table td:first-child {
+    font-weight: bold;
+    width: 180px;
+}
+.package-group {
+    margin-bottom: 20px;
+    border-left: 3px solid #2196F3;
+    background-color: #f9f9f9;
+    border-radius: 0 4px 4px 0;
+}
+.package-name {
+    padding: 8px 15px;
+    background-color: #e3f2fd;
+    font-family: 'Fira Code', 'Source Code Pro', monospace;
+    font-size: 14px;
+    color: #0d47a1;
+}
+.package-frames {
+    padding: 10px 15px;
+}
+.stack-frame {
+    font-family: 'Fira Code', 'Source Code Pro', monospace;
+    font-size: 14px;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    border-radius: 3px;
+    background-color: #f5f5f5;
+}
+.important-frame {
+    background-color: #fff8e1;
+    border-left: 3px solid #ffc107;
+}
+.app-frame {
+    background-color: #e8f5e9;
+    border-left: 3px solid #4caf50;
+}
+.frame-number {
+    display: inline-block;
+    min-width: 24px;
+    text-align: right;
+    margin-right: 10px;
+    color: #757575;
+}
+.frame-class {
+    font-weight: bold;
+    color: #0288d1;
+}
+.frame-method {
+    color: #d81b60;
+}
+.frame-location {
+    color: #616161;
+    margin-left: 10px;
+}
+.caused-by {
+    margin-top: 15px;
+    border-left: 3px solid #ff9800;
+    padding-left: 15px;
+}
+.caused-by-header {
+    padding: 8px 10px;
+    background-color: #fff3e0;
+    font-weight: bold;
+    color: #e65100;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+.suggestion-list {
+    margin: 0;
+    padding-left: 20px;
+}
+.suggestion-list li {
+    margin-bottom: 8px;
+}
+    </style>
+</head>
+<body>
+<div class="exception-container">
+    <header class="exception-header">
+        <div class="exception-title">Exception Report</div>
+        <div class="exception-timestamp">2025-05-20 12:04:23</div>
+    </header>
+    <div class="exception-summary">
+        <div class="exception-type">io.joshuasalcedo.pretty.core.model.error.PrettyException</div>
+        <div class="exception-message">Application startup failed</div>
+    </div>
+    <div class="exception-section">
+        <div class="section-header">Environment Information</div>
+        <div class="section-content">
+            <table class="info-table">
+                <tr><td>Java Version</td><td>21.0.7</td></tr>
+                <tr><td>OS Name</td><td>Linux</td></tr>
+                <tr><td>OS Version</td><td>5.15.167.4-microsoft-standard-WSL2</td></tr>
+                <tr><td>OS Architecture</td><td>amd64</td></tr>
+                <tr><td>User Directory</td><td>/home/dev/java-projects/joshuasalcedo-library/pretty-java/pretty-java-core</td></tr>
+            </table>
+        </div>
+    </div>
+    <div class="exception-section">
+        <div class="section-header">Additional Context</div>
+        <div class="section-content">
+            <table class="info-table">
+                <tr><td>User</td><td>admin</td></tr>
+                <tr><td>Startup Phase</td><td>Configuration Loading</td></tr>
+                <tr><td>Application Name</td><td>MyAwesomeApp</td></tr>
+                <tr><td>Config Path</td><td>/etc/myapp/config.json</td></tr>
+            </table>
+        </div>
+    </div>
+    <div class="exception-section">
+        <div class="section-header">Stack Trace</div>
+        <div class="section-content">
+<div class="package-group">
+    <div class="package-name">java.lang</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame">
+    <span class="frame-number">4</span>
+    <span class="frame-class">Thread</span>.
+    <span class="frame-method">run</span>
+    <span class="frame-location">(Thread.java:1583)</span>
+</div>
+    </div>
+</div>
+<div class="package-group">
+    <div class="package-name">org.codehaus.mojo.exec</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">1</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">doMain</span>
+    <span class="frame-location">(ExecJavaMojo.java:375)</span>
+</div>
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">2</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">doExec</span>
+    <span class="frame-location">(ExecJavaMojo.java:364)</span>
+</div>
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">3</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">lambda$execute$0</span>
+    <span class="frame-location">(ExecJavaMojo.java:286)</span>
+</div>
+    </div>
+</div>
+<div class="package-group">
+    <div class="package-name">io.joshuasalcedo.pretty.core.demo</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">0</span>
+    <span class="frame-class">PrettyExceptionExample</span>.
+    <span class="frame-method">main</span>
+    <span class="frame-location">(PrettyExceptionExample.java:27)</span>
+</div>
+    </div>
+</div>
+<div class="caused-by">
+    <div class="caused-by-header">Caused by: java.lang.IllegalStateException: Application initialization failed</div>
+<div class="package-group">
+    <div class="package-name">java.lang</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame">
+    <span class="frame-number">4</span>
+    <span class="frame-class">Thread</span>.
+    <span class="frame-method">run</span>
+    <span class="frame-location">(Thread.java:1583)</span>
+</div>
+    </div>
+</div>
+<div class="package-group">
+    <div class="package-name">org.codehaus.mojo.exec</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">1</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">doMain</span>
+    <span class="frame-location">(ExecJavaMojo.java:375)</span>
+</div>
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">2</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">doExec</span>
+    <span class="frame-location">(ExecJavaMojo.java:364)</span>
+</div>
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">3</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">lambda$execute$0</span>
+    <span class="frame-location">(ExecJavaMojo.java:286)</span>
+</div>
+    </div>
+</div>
+<div class="package-group">
+    <div class="package-name">io.joshuasalcedo.pretty.core.demo</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">0</span>
+    <span class="frame-class">PrettyExceptionExample</span>.
+    <span class="frame-method">main</span>
+    <span class="frame-location">(PrettyExceptionExample.java:24)</span>
+</div>
+    </div>
+</div>
+<div class="caused-by">
+    <div class="caused-by-header">Caused by: java.io.IOException: Failed to read config file: config.json</div>
+<div class="package-group">
+    <div class="package-name">java.lang</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame">
+    <span class="frame-number">4</span>
+    <span class="frame-class">Thread</span>.
+    <span class="frame-method">run</span>
+    <span class="frame-location">(Thread.java:1583)</span>
+</div>
+    </div>
+</div>
+<div class="package-group">
+    <div class="package-name">org.codehaus.mojo.exec</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">1</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">doMain</span>
+    <span class="frame-location">(ExecJavaMojo.java:375)</span>
+</div>
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">2</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">doExec</span>
+    <span class="frame-location">(ExecJavaMojo.java:364)</span>
+</div>
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">3</span>
+    <span class="frame-class">ExecJavaMojo</span>.
+    <span class="frame-method">lambda$execute$0</span>
+    <span class="frame-location">(ExecJavaMojo.java:286)</span>
+</div>
+    </div>
+</div>
+<div class="package-group">
+    <div class="package-name">io.joshuasalcedo.pretty.core.demo</div>
+    <div class="package-frames">
+<div class="stack-frame important-frame app-frame">
+    <span class="frame-number">0</span>
+    <span class="frame-class">PrettyExceptionExample</span>.
+    <span class="frame-method">main</span>
+    <span class="frame-location">(PrettyExceptionExample.java:22)</span>
+</div>
+    </div>
+</div>
+</div>
+</div>
+        </div>
+    </div>
+    <div class="exception-section">
+        <div class="section-header">Suggested Actions</div>
+        <div class="section-content">
+            <ul class="suggestion-list">
+                <li>Check the application logs for more details</li>
+                <li>Review code around the exception source</li>
+                <li>Verify environment configuration</li>
+                <li>Add diagnostic logging around the problematic area</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -34,7 +34,7 @@ public class CounterProgressRunner extends AbstractProgressRunner {
     private RGBColor counterColor = RGBColor.of(255, 215, 0).withName("counter-gold");
     
     // Format for the counter display
-    private String format = "%d/%d";
+    private String format = "\n%d/%d";
     
     // Whether to show brackets around the counter
     private boolean showBrackets = true;

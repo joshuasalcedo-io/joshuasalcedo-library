@@ -470,64 +470,201 @@ public class PrettyPrintStream extends PrintStream {
         print(text);
         this.foreground(oldFg).background(oldBg);
     }
-    
+    // In PrettyPrintStream class
+// First, make sure to remove or comment out these constants if they exist
+// private static final String OSC_HYPERLINK_START = "\u001B]8;;";
+// private static final String OSC_HYPERLINK_END = "\u001B\\";
+// private static final String OSC_HYPERLINK_CLOSE = "\u001B]8;;\u001B\\";
+
     /**
-     * Prints a clickable hyperlink. This uses OSC 8 escape sequence which is supported by
-     * many modern terminals (iTerm2, Windows Terminal, etc.) to make the link clickable.
-     * 
-     * @param url The URL to link to
-     * @param text The text to display (if null, the URL itself is displayed)
+     * Prints a URL with link styling (blue and underlined).
+     *
+     * // TODO: Rename this method to better reflect its functionality since it's not a true hyperlink
+     *
+     * @param url The URL to format as a link
      */
-    public void printHyperlink(String url, String text) {
+    public void printHyperlink(String url) {
         if (url == null || url.isEmpty()) {
             return;
         }
-        
-        String displayText = (text != null && !text.isEmpty()) ? text : url;
-        
-        // Save current settings
+
+        // Save current formatting settings
         boolean oldUnderline = this.underline;
         RGBColor oldFg = this.foregroundColor;
         TerminalStyle oldStyle = this.terminalStyle;
-        
-        // Apply hyperlink style (blue text + underline)
+
+        // Apply hyperlink style
         this.style(TerminalStyle.HYPERLINK);
         this.underline(true);
-        
-        // Use OSC 8 escape sequence for clickable links
-        // Format: ESC]8;;URL<ESC>\ Display Text ESC]8;;<ESC>\
-        if (TerminalUtils.isAnsiSupported()) {
-            String linkText = OSC_HYPERLINK_START + url + OSC_HYPERLINK_END + displayText + OSC_HYPERLINK_CLOSE;
-            super.print(format(linkText));
-        } else {
-            // If ANSI is not supported, just print the formatted text
-            super.print(format(displayText + " (" + url + ")"));
+
+        // Print the styled text - absolutely no OSC sequences
+        super.print(format(url));
+
+        // Restore original formatting settings
+        this.underline = oldUnderline;
+        this.foregroundColor = oldFg;
+        this.terminalStyle = oldStyle;
+        System.out.println();
+    }
+
+    /**
+     * For PrettyPrintStream: Prints a file path with link styling (blue and underlined).
+     *
+     * // TODO: Rename this method to better reflect its functionality since it's not a true hyperlink
+     *
+     * @param file The File object to format as a link
+     * @param useAbsolutePath Whether to display the absolute path or just the file name
+     */
+    public void printFileLink(File file, boolean useAbsolutePath) {
+        if (file == null) {
+            return;
         }
-        
-        // Restore previous settings
+
+        // Determine what text to display
+        String displayText = useAbsolutePath ? file.getAbsolutePath() : file.getName();
+
+        // Save current formatting settings
+        boolean oldUnderline = this.underline;
+        RGBColor oldFg = this.foregroundColor;
+        TerminalStyle oldStyle = this.terminalStyle;
+
+        // Apply link style (blue and underlined)
+        this.style(TerminalStyle.HYPERLINK);
+        this.underline(true);
+
+        // Print the styled text - absolutely no OSC sequences
+        super.print(format(displayText));
+
+        // Restore original formatting settings
         this.underline = oldUnderline;
         this.foregroundColor = oldFg;
         this.terminalStyle = oldStyle;
     }
-    
+
     /**
-     * Prints a clickable hyperlink with a line feed. Uses OSC 8 escape sequence supported by
-     * many modern terminals (iTerm2, Windows Terminal, etc.) to make the link clickable.
-     * 
-     * @param url The URL to link to
-     * @param text The text to display (if null, the URL itself is displayed)
+     * For PrettyPrintStream: Prints a clickable hyperlink to a local file, showing only the file name.
+     *
+     * @param file The File object to link to
      */
-    public void printlnHyperlink(String url, String text) {
-        printHyperlink(url, text);
+    public void printFileLink(File file) {
+        printFileLink(file, false);
+    }
+
+    /**
+     * For PrettyPrintStream: Prints a clickable hyperlink to a local file followed by a line break.
+     *
+     * @param file The File object to link to
+     * @param useAbsolutePath Whether to display the absolute path or just the file name
+     */
+    public void printlnFileLink(File file, boolean useAbsolutePath) {
+        printFileLink(file, useAbsolutePath);
         println();
     }
+
+    /**
+     * For PrettyPrintStream: Prints a clickable hyperlink to a local file followed by a line break.
+     * Shows only the file name.
+     *
+     * @param file The File object to link to
+     */
+    public void printlnFileLink(File file) {
+        printFileLink(file, false);
+        println();
+    }
+
+    /**
+     * Prints a clickable hyperlink to a local file with absolute path.
+     * Works in terminals that support OSC 8 hyperlinks (e.g., iTerm2, Windows Terminal).
+     *
+     * @param file The File object to link to
+     */
+    public void printClickableFileLink(File file) {
+        if (file == null) {
+            return;
+        }
+
+        // Convert File to URI, then to URL string
+        String fileUrl = file.toURI().toString();
+
+        // Get absolute path for display
+        String displayText = file.getAbsolutePath();
+
+        // Print formatted hyperlink
+        printRawHyperlink(fileUrl, displayText);
+    }
+
+    /**
+     * Prints a clickable hyperlink to a local file followed by a line break.
+     *
+     * @param file The File object to link to
+     */
+    public void printlnClickableFileLink(File file) {
+        printClickableFileLink(file);
+        println();
+    }
+
+    /**
+     * Prints a clickable hyperlink.
+     * Works in terminals that support OSC 8 hyperlinks.
+     *
+     * @param url The URL to link to
+     * @param displayText The text to display instead of the URL
+     */
+    public void printRawHyperlink(String url, String displayText) {
+        if (url == null || url.isEmpty() || displayText == null) {
+            return;
+        }
+
+        // Save current formatting settings
+        boolean oldUnderline = this.underline;
+        RGBColor oldFg = this.foregroundColor;
+        TerminalStyle oldStyle = this.terminalStyle;
+
+        // Apply hyperlink style
+        this.style(TerminalStyle.HYPERLINK);
+        this.underline(true);
+
+        // Format the display text with styling
+        String styledText = format(displayText);
+
+        // Remove the ANSI reset from the styled text if present
+        if (styledText.endsWith("\u001B[0m")) {
+            styledText = styledText.substring(0, styledText.length() - 4);
+        }
+
+        if (TerminalUtils.isAnsiSupported()) {
+            // OSC 8 escape sequence for clickable links
+            // Format: ESC]8;;URL ESC\ Display Text ESC]8;; ESC\
+            super.print("\u001B]8;;" + url + "\u001B\\" +
+                    styledText +
+                    "\u001B]8;;\u001B\\" + "\u001B[0m");
+        } else {
+            // Fallback for terminals without support
+            super.print(format(displayText));
+        }
+
+        // Restore original formatting settings
+        this.underline = oldUnderline;
+        this.foregroundColor = oldFg;
+        this.terminalStyle = oldStyle;
+    }
+
+
+
+
+
+
+
+
+
+
 
     // Main method to demonstrate the PrettyPrintStream
     public static void main(String[] args) {
         PrettyPrintStream out = new PrettyPrintStream(System.out);
-        
+
         out.println("=== PrettyPrintStream Demo ===");
-        
+
         // Demonstrate RGB colors
         out.println("\nRGB Colors:");
         out.println(RGBColor.of(255, 0, 0), "Pure Red (255, 0, 0)");
@@ -535,13 +672,13 @@ public class PrettyPrintStream extends PrintStream {
         out.println(RGBColor.of(0, 0, 255), "Pure Blue (0, 0, 255)");
         out.println(RGBColor.of(255, 165, 0), "Orange (255, 165, 0)");
         out.println(RGBColor.of(128, 0, 128), "Purple (128, 0, 128)");
-        
+
         // Demonstrate background colors
         out.println("\nBackground Colors:");
         out.println(RGBColor.of(255, 255, 255), RGBColor.of(255, 0, 0), "White text on red background");
         out.println(RGBColor.of(0, 0, 0), RGBColor.of(0, 255, 0), "Black text on green background");
         out.println(RGBColor.of(255, 255, 0), RGBColor.of(0, 0, 128), "Yellow text on navy background");
-        
+
         // Demonstrate text styles
         out.println("\nText Styles:");
         out.bold(true).println("Bold text");
@@ -550,7 +687,7 @@ public class PrettyPrintStream extends PrintStream {
         out.reset().strikethrough(true).println("Strikethrough text");
         out.reset().bold(true).foreground(RGBColor.of(255, 0, 255)).println("Bold magenta text");
         out.reset().italic(true).underline(true).foreground(RGBColor.of(0, 200, 200)).println("Italic and underlined cyan text");
-        
+
         // Demonstrate terminal styles if available
         if (TerminalStyle.values().length > 0) {
             out.println("\nPredefined Terminal Styles:");
@@ -559,27 +696,28 @@ public class PrettyPrintStream extends PrintStream {
             out.println(TerminalStyle.SUCCESS, "This is a success message");
             out.println(TerminalStyle.INFO, "This is an info message");
         }
-        
+
         // Demonstrate hyperlinks
         out.println("\nHyperlink Examples:");
         out.println("The following are clickable links in terminals that support it:");
-        out.printlnHyperlink("https://github.com/joshuasalcedo-io/joshuasalcedo-library", "GitHub Repository");
-        out.printlnHyperlink("https://joshuasalcedo.io", "Joshua Salcedo's Website");
-        out.printlnHyperlink("https://example.com", null); // URL as text
-        
+        out.printHyperlink("https://github.com/joshuasalcedo-io/joshuasalcedo-library");
+        out.printHyperlink("https://joshuasalcedo.io");
+        out.printHyperlink("https://example.com"); // URL as text
+
         // Demonstrate gradients
         out.println("\nColor Gradients:");
         for (int i = 0; i < 255; i += 10) {
             out.print(RGBColor.of(255 - i, 0, i), "■");
         }
         out.println();
-        
+
         for (int i = 0; i < 255; i += 10) {
             out.print(RGBColor.of(255, i, 0), "■");
         }
         out.println();
-        
+
         // Reset at the end
         out.reset();
     }
+
 }

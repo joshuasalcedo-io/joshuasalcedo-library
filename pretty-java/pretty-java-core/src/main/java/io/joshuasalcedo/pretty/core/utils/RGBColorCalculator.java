@@ -8,7 +8,7 @@ package io.joshuasalcedo.pretty.core.utils;
 public class RGBColorCalculator {
 
     // ANSI escape code constants
-    private static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RESET = "\u001B[0m";
     private static final String ANSI_FG_256 = "\u001B[38;5;%dm";
     private static final String ANSI_BG_256 = "\u001B[48;5;%dm";
     

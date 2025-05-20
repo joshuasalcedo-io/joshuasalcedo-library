@@ -5,11 +5,11 @@
   <parent>
     <groupId>io.joshuasalcedo.library</groupId>
     <artifactId>library-parent</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5-SNAPSHOT</version>
   </parent>
   <groupId>io.joshuasalcedo.library</groupId>
   <artifactId>pretty-java</artifactId>
-  <version>0.1.4</version>
+  <version>0.1.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <licenses>
     <license>

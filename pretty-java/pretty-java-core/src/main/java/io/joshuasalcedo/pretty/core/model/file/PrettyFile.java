@@ -1,6 +1,7 @@
 package io.joshuasalcedo.pretty.core.model.file;
 
 import io.joshuasalcedo.pretty.core.model.stream.PrettyPrintStream;
+import io.joshuasalcedo.pretty.core.model.stream.PrettySystem;
 import io.joshuasalcedo.pretty.core.properties.RGBColor;
 import io.joshuasalcedo.pretty.core.theme.TerminalStyle;
 import io.joshuasalcedo.pretty.core.utils.FileUtils;
@@ -13,8 +14,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * An extension of File that provides RGB color styling and visualization capabilities.
@@ -827,5 +827,404 @@ public class PrettyFile extends File {
         }
 
         out.reset();
+    }
+
+    /**
+     * Display a formatted list of files from an external list.
+     *
+     * @param files List of File objects to display
+     */
+    public static void showFileList(List<File> files) {
+        if (files == null || files.isEmpty()) {
+            System.out.println("No files to display.");
+            return;
+        }
+
+        // Convert regular Files to PrettyFiles with default formatting
+        List<PrettyFile> prettyFiles = new ArrayList<>();
+        for (File file : files) {
+            PrettyFile prettyFile = new PrettyFile(file);
+            prettyFile.withIcon();
+            prettyFiles.add(prettyFile);
+        }
+
+        // Group by directories and files
+        System.out.println("\n== DIRECTORIES ==");
+        for (PrettyFile file : prettyFiles) {
+            if (file.isDirectory()) {
+                System.out.println(file.getFormattedName());
+            }
+        }
+
+        System.out.println("\n== FILES ==");
+        for (PrettyFile file : prettyFiles) {
+            if (!file.isDirectory()) {
+                System.out.println(file.getFormattedName());
+            }
+        }
+    }
+
+    /**
+     * Display a formatted list of files from an external list using a PrettyPrintStream.
+     *
+     * @param files List of File objects to display
+     * @param out The PrettyPrintStream to use for output
+     */
+    public static void showFileList(List<File> files, PrettyPrintStream out) {
+        if (files == null || files.isEmpty()) {
+            out.println("No files to display.");
+            return;
+        }
+
+        // Convert regular Files to PrettyFiles with default formatting
+        List<PrettyFile> prettyFiles = new ArrayList<>();
+        for (File file : files) {
+            PrettyFile prettyFile = new PrettyFile(file);
+            prettyFile.withIcon();
+            prettyFiles.add(prettyFile);
+        }
+
+        // Group by directories and files
+        out.foreground(RGBColor.of(255, 215, 0)).bold(true).println("\n== DIRECTORIES ==");
+        for (PrettyFile file : prettyFiles) {
+            if (file.isDirectory()) {
+                out.foreground(DEFAULT_DIR_COLOR);
+                out.bold(true);
+                if (file.showIcon) {
+                    out.print(file.getIcon() + " ");
+                }
+                out.println(file.getName());
+                out.reset(); // Reset formatting for next item
+            }
+        }
+
+        out.foreground(RGBColor.of(255, 215, 0)).bold(true).println("\n== FILES ==");
+        for (PrettyFile file : prettyFiles) {
+            if (!file.isDirectory()) {
+                out.foreground(DEFAULT_FILE_COLOR);
+                out.bold(true);
+                if (file.showIcon) {
+                    out.print(file.getIcon() + " ");
+                }
+                out.println(file.getName());
+                out.reset(); // Reset formatting for next item
+            }
+        }
+    }
+
+    /**
+     * Display a file tree structure from a list of files.
+     *
+     * @param files List of File objects to display as a tree
+     */
+    public static void showFileTree(List<File> files) {
+        if (files == null || files.isEmpty()) {
+            System.out.println("No files to display.");
+            return;
+        }
+
+        System.out.println("File Tree:");
+
+        // Convert to PrettyFiles for better display
+        List<PrettyFile> prettyFiles = new ArrayList<>();
+        for (File file : files) {
+            PrettyFile prettyFile = new PrettyFile(file);
+            prettyFile.withIcon();
+            prettyFiles.add(prettyFile);
+        }
+
+        // Sort directories first, then by name
+        prettyFiles.sort((f1, f2) -> {
+            if (f1.isDirectory() && !f2.isDirectory()) return -1;
+            if (!f1.isDirectory() && f2.isDirectory()) return 1;
+            return f1.getName().compareToIgnoreCase(f2.getName());
+        });
+
+        // Find root directories and files
+        Map<String, List<PrettyFile>> directoryContents = new HashMap<>();
+
+        // Group files by their parent path
+        for (PrettyFile file : prettyFiles) {
+            String parentPath = file.getParent();
+            if (parentPath == null) {
+                parentPath = "/"; // Root
+            }
+
+            if (!directoryContents.containsKey(parentPath)) {
+                directoryContents.put(parentPath, new ArrayList<>());
+            }
+            directoryContents.get(parentPath).add(file);
+        }
+
+        // Collect all unique directories
+        Set<String> allDirectories = new HashSet<>();
+        for (PrettyFile file : prettyFiles) {
+            if (file.isDirectory()) {
+                allDirectories.add(file.getAbsolutePath());
+            }
+        }
+
+        // Find the top-level items (not contained in any other directory in our list)
+        List<PrettyFile> topLevelItems = new ArrayList<>();
+        for (PrettyFile file : prettyFiles) {
+            String parent = file.getParent();
+            if (parent == null || !allDirectories.contains(parent)) {
+                topLevelItems.add(file);
+            }
+        }
+
+        // Print the tree starting with top-level items
+        for (int i = 0; i < topLevelItems.size(); i++) {
+            printFileTreeNode(topLevelItems.get(i), directoryContents, "", i == topLevelItems.size() - 1);
+        }
+    }
+
+    /**
+     * Display a file tree structure from a list of files using a PrettyPrintStream.
+     *
+     * @param files List of File objects to display as a tree
+     * @param out The PrettyPrintStream to use for output
+     */
+    public static void showFileTree(List<File> files, PrettyPrintStream out) {
+        if (files == null || files.isEmpty()) {
+            out.println("No files to display.");
+            return;
+        }
+
+        out.println("File Tree:");
+
+        // Convert to PrettyFiles for better display
+        List<PrettyFile> prettyFiles = new ArrayList<>();
+        for (File file : files) {
+            PrettyFile prettyFile = new PrettyFile(file);
+            prettyFile.withIcon();
+            prettyFiles.add(prettyFile);
+        }
+
+        // Sort directories first, then by name
+        prettyFiles.sort((f1, f2) -> {
+            if (f1.isDirectory() && !f2.isDirectory()) return -1;
+            if (!f1.isDirectory() && f2.isDirectory()) return 1;
+            return f1.getName().compareToIgnoreCase(f2.getName());
+        });
+
+        // Find root directories and files
+        Map<String, List<PrettyFile>> directoryContents = new HashMap<>();
+
+        // Group files by their parent path
+        for (PrettyFile file : prettyFiles) {
+            String parentPath = file.getParent();
+            if (parentPath == null) {
+                parentPath = "/"; // Root
+            }
+
+            if (!directoryContents.containsKey(parentPath)) {
+                directoryContents.put(parentPath, new ArrayList<>());
+            }
+            directoryContents.get(parentPath).add(file);
+        }
+
+        // Collect all unique directories
+        Set<String> allDirectories = new HashSet<>();
+        for (PrettyFile file : prettyFiles) {
+            if (file.isDirectory()) {
+                allDirectories.add(file.getAbsolutePath());
+            }
+        }
+
+        // Find the top-level items (not contained in any other directory in our list)
+        List<PrettyFile> topLevelItems = new ArrayList<>();
+        for (PrettyFile file : prettyFiles) {
+            String parent = file.getParent();
+            if (parent == null || !allDirectories.contains(parent)) {
+                topLevelItems.add(file);
+            }
+        }
+
+        // Print the tree starting with top-level items
+        for (int i = 0; i < topLevelItems.size(); i++) {
+            printFileTreeNode(topLevelItems.get(i), directoryContents, out, "", i == topLevelItems.size() - 1);
+        }
+    }
+
+    /**
+     * Helper method to print a node in the file tree.
+     *
+     * @param file The file to print
+     * @param directoryContents Map of directory paths to their contained files
+     * @param prefix The prefix string for indentation
+     * @param isLast Whether this is the last item in its list
+     */
+    private static void printFileTreeNode(PrettyFile file, Map<String, List<PrettyFile>> directoryContents,
+                                          String prefix, boolean isLast) {
+        // Print the current node
+        System.out.print(prefix);
+        System.out.print(isLast ? "└── " : "├── ");
+        System.out.println(file.getFormattedName());
+
+        // If this is a directory, print its children
+        if (file.isDirectory()) {
+            String path = file.getAbsolutePath();
+            List<PrettyFile> children = directoryContents.getOrDefault(path, Collections.emptyList());
+
+            // Sort children: directories first, then by name
+            children.sort((f1, f2) -> {
+                if (f1.isDirectory() && !f2.isDirectory()) return -1;
+                if (!f1.isDirectory() && f2.isDirectory()) return 1;
+                return f1.getName().compareToIgnoreCase(f2.getName());
+            });
+
+            String newPrefix = prefix + (isLast ? "    " : "│   ");
+
+            for (int i = 0; i < children.size(); i++) {
+                printFileTreeNode(children.get(i), directoryContents, newPrefix, i == children.size() - 1);
+            }
+        }
+    }
+
+    /**
+     * Helper method to print a node in the file tree with a PrettyPrintStream.
+     *
+     * @param file The file to print
+     * @param directoryContents Map of directory paths to their contained files
+     * @param out The PrettyPrintStream to use for output
+     * @param prefix The prefix string for indentation
+     * @param isLast Whether this is the last item in its list
+     */
+    private static void printFileTreeNode(PrettyFile file, Map<String, List<PrettyFile>> directoryContents,
+                                          PrettyPrintStream out, String prefix, boolean isLast) {
+        // Print the current node
+        out.print(prefix);
+        out.print(isLast ? "└── " : "├── ");
+
+        // Apply formatting based on file type
+        if (file.isDirectory()) {
+            out.foreground(DEFAULT_DIR_COLOR);
+        } else {
+            out.foreground(DEFAULT_FILE_COLOR);
+        }
+        out.bold(true);
+
+        if (file.showIcon) {
+            out.print(file.getIcon() + " ");
+        }
+        out.println(file.getName());
+        out.reset();
+
+        // If this is a directory, print its children
+        if (file.isDirectory()) {
+            String path = file.getAbsolutePath();
+            List<PrettyFile> children = directoryContents.getOrDefault(path, Collections.emptyList());
+
+            // Sort children: directories first, then by name
+            children.sort((f1, f2) -> {
+                if (f1.isDirectory() && !f2.isDirectory()) return -1;
+                if (!f1.isDirectory() && f2.isDirectory()) return 1;
+                return f1.getName().compareToIgnoreCase(f2.getName());
+            });
+
+            String newPrefix = prefix + (isLast ? "    " : "│   ");
+
+            for (int i = 0; i < children.size(); i++) {
+                printFileTreeNode(children.get(i), directoryContents, out, newPrefix, i == children.size() - 1);
+            }
+        }
+    }
+
+
+
+    /**
+     * Extension for PrettyFile to support hyperlinks
+     */
+
+    /**
+     * Prints this file as a clickable hyperlink.
+     *
+     * @param out The PrettyPrintStream to print to
+     * @param useAbsolutePath Whether to display the absolute path or just the file name
+     */
+    public void printAsLink(PrettyPrintStream out, boolean useAbsolutePath) {
+        out.printFileLink(this, useAbsolutePath);
+    }
+
+    /**
+     * Prints this file as a clickable hyperlink, displaying only the file name.
+     *
+     * @param out The PrettyPrintStream to print to
+     */
+    public void printAsLink(PrettyPrintStream out) {
+        out.printFileLink(this, false);
+    }
+
+    /**
+     * Prints this file as a clickable hyperlink followed by a line break.
+     *
+     * @param out The PrettyPrintStream to print to
+     * @param useAbsolutePath Whether to display the absolute path or just the file name
+     */
+    public void printlnAsLink(PrettyPrintStream out, boolean useAbsolutePath) {
+        out.printlnFileLink(this, useAbsolutePath);
+    }
+
+    /**
+     * Prints this file as a clickable hyperlink followed by a line break, displaying only the file name.
+     *
+     * @param out The PrettyPrintStream to print to
+     */
+    public void printlnAsLink(PrettyPrintStream out) {
+        out.printlnFileLink(this, false);
+    }
+
+    /**
+     * Prints this file as a clickable hyperlink to the standard output.
+     *
+     * @param useAbsolutePath Whether to display the absolute path or just the file name
+     */
+    public void printAsLink(boolean useAbsolutePath) {
+        PrettySystem.printFileLink(this, useAbsolutePath);
+    }
+
+    /**
+     * Prints this file as a clickable hyperlink to the standard output, displaying only the file name.
+     */
+    public void printAsLink() {
+        PrettySystem.printFileLink(this);
+    }
+
+    /**
+     * Prints this file as a clickable hyperlink to the standard output followed by a line break.
+     *
+     * @param useAbsolutePath Whether to display the absolute path or just the file name
+     */
+    public void printlnAsLink(boolean useAbsolutePath) {
+        PrettySystem.printlnFileLink(this, useAbsolutePath);
+    }
+
+    /**
+     * Prints this file as a clickable hyperlink to the standard output followed by a line break,
+     * displaying only the file name.
+     */
+    public void printlnAsLink() {
+        PrettySystem.printlnFileLink(this);
+    }
+
+    /**
+     * Adds methods to PrettyFile for clickable links
+     */
+// In PrettyFile class
+    public void printAsClickableLink(PrettyPrintStream out) {
+        out.printClickableFileLink(this);
+    }
+
+    public void printlnAsClickableLink(PrettyPrintStream out) {
+        out.printlnClickableFileLink(this);
+    }
+
+    public void printAsClickableLink() {
+        PrettySystem.printClickableFileLink(this);
+    }
+
+    public void printlnAsClickableLink() {
+        PrettySystem.printlnClickableFileLink(this);
     }
 }

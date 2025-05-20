@@ -196,15 +196,124 @@ Not yet complete but can be used
 ```
 
 
+## Using the Library
+
+### Option 1: Import All Modules (Recommended)
+
+To include all modules automatically in your project, add the library-parent dependency to your project's dependencyManagement section:
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.joshuasalcedo.library</groupId>
+            <artifactId>library-parent</artifactId>
+            <version>${library.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+Then you can use any module without specifying versions:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>io.joshuasalcedo.library</groupId>
+        <artifactId>pretty-java-core</artifactId>
+    </dependency>
+</dependencies>
+```
+
+### Option 2: Import Specific Modules
+
+Alternatively, you can import specific modules with explicit versions:
+
+```xml
+<!-- For pretty-java core module only -->
+<dependency>
+    <groupId>io.joshuasalcedo.library</groupId>
+    <artifactId>pretty-java-core</artifactId>
+    <version>${library.version}</version>
+</dependency>
+```
+
 ## Deployment Commands
 
 ```shell
+# Navigate to root directory
 cd $(git rev-parse --show-toplevel)
-git add .
-#git commit -m "Refactor $(git ls-files --full-name commit-message.txt)"
-git commit -m ""
-mvn clean deploy -P nexus
-mvn clean deploy -P github
-git push origin main
 
+# Add changes
+git add .
+
+# Commit changes
+git commit -m "feature: Added PrettyTimeStamp"
+
+# Deploy to Nexus repository
+mvn clean deploy -DaltDeploymentRepository=joshuasalcedo-nexus::default::https://repo.joshuasalcedo.io/repository/maven-releases/
+
+# Deploy to GitHub packages
+#mvn clean deploy -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/joshuasalcedo-io/joshuasalcedo-library
+
+# Push changes to GitHub
+git push origin main
 ```
+
+## Module Structure
+
+The library is organized into the following modules:
+
+1. `library-parent` - Parent POM that includes all modules
+2. `pretty-java` - Module containing Pretty Java Console components
+   - `pretty-java-core` - Core functionality for Pretty Java
+
+When you depend on `library-parent`, all these modules are automatically included in your project.
+
+### How to Add New Modules
+
+To add a new module to the library:
+
+1. Create the module directory and POM file with appropriate parent reference
+2. Add the module to the parent's `<modules>` section
+3. Add the module to the parent's `<dependencyManagement>` section
+
+Example:
+
+```xml
+<!-- In library-parent/pom.xml -->
+<modules>
+    <module>pretty-java</module>
+    <module>your-new-module</module>
+</modules>
+
+<dependencyManagement>
+    <dependencies>
+        <!-- Add your new module -->
+        <dependency>
+            <groupId>io.joshuasalcedo.library</groupId>
+            <artifactId>your-new-module</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+## Deployment Implementation Details
+
+The library deployment has been automated with the following features:
+
+1. **Automatic Module Discovery**: All modules are automatically included when depending on the `library-parent` POM.
+
+2. **Version Management**: The `${revision}` property is used for consistent versioning across all modules. The flatten-maven-plugin resolves these placeholders during the build.
+
+3. **Deployment Optimization**: The `maven-deploy-plugin` is configured with `deployAtEnd=true` to optimize the deployment process.
+
+4. **Bill of Materials (BOM) Pattern**: The parent POM serves as a BOM, allowing consumers to import all dependencies with consistent versions.
+
+5. **Multiple Repository Support**: The project can be deployed to:
+   - Nexus repository: `mvn clean deploy -P nexus`
+   - GitHub packages: `mvn clean deploy -P github`
+   - Maven Central: `mvn clean deploy -P central`

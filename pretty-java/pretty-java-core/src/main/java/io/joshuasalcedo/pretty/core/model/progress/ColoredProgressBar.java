@@ -178,7 +178,7 @@ public class ColoredProgressBar extends AbstractProgressRunner {
      * @return This instance for method chaining
      */
     public ColoredProgressBar setStyle(TerminalStyle style) {
-        withStyle(style);
+        super.withStyle(style);
         return this;
     }
 
@@ -189,7 +189,7 @@ public class ColoredProgressBar extends AbstractProgressRunner {
      * @return This instance for method chaining
      */
     public ColoredProgressBar setProgress(double value) {
-        withProgress(value);
+        super.withProgress(value);
         return this;
     }
 
@@ -200,7 +200,7 @@ public class ColoredProgressBar extends AbstractProgressRunner {
      * @return This instance for method chaining
      */
     public ColoredProgressBar setMessage(String newMessage) {
-        withMessage(newMessage);
+        super.withMessage(newMessage);
         return this;
     }
 
@@ -211,10 +211,9 @@ public class ColoredProgressBar extends AbstractProgressRunner {
      * @return This instance for method chaining
      */
     public ColoredProgressBar withIndeterminate(boolean indeterminate) {
-        withIndeterminate(indeterminate);
+        super.withIndeterminate(indeterminate);  // Should call the parent method
         return this;
     }
-
     /**
      * Set a PrettyPrintStream for the progress bar.
      *
@@ -222,7 +221,7 @@ public class ColoredProgressBar extends AbstractProgressRunner {
      * @return This instance for method chaining
      */
     public ColoredProgressBar setPrettyOutputStream(PrettyPrintStream prettyOut) {
-        withPrettyOutputStream(prettyOut);
+        super.withPrettyOutputStream(prettyOut);
         return this;
     }
 

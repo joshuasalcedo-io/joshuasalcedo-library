@@ -182,6 +182,12 @@ public enum TerminalStyle {
     UI_LINK(RGBColor.of(0, 240, 240).withName("link-cyan")),
     
     /**
+     * Clickable hyperlink style with blue text and underline.
+     * Uses the OSC 8 hyperlink ANSI sequence for terminal support.
+     */
+    HYPERLINK(RGBColor.of(0, 120, 255).withName("hyperlink-blue")),
+    
+    /**
      * UI button style with black text on green background.
      */
     UI_BUTTON(RGBColor.of(0, 0, 0).withName("black"),

@@ -15,6 +15,92 @@ Pretty Java Core provides a set of tools for enhancing command-line interfaces w
 
 This library makes it easy to create professional-looking CLI applications that provide visual feedback to users during long-running operations.
 
+## Quick Start Example
+
+Here's a complete example you can copy and paste to get started immediately:
+
+```java
+import io.joshuasalcedo.pretty.core.model.ProgressBarRunner;
+import io.joshuasalcedo.pretty.core.model.ProgressRunnerFactory;
+import io.joshuasalcedo.pretty.core.model.SpinnerProgressRunner;
+import io.joshuasalcedo.pretty.core.model.TaskListProgressRunner;
+import io.joshuasalcedo.pretty.core.model.stream.PrettyPrintStream;
+import io.joshuasalcedo.pretty.core.properties.RGBColor;
+import io.joshuasalcedo.pretty.core.theme.TerminalStyle;
+
+public class PrettyJavaExample {
+    public static void main(String[] args) throws Exception {
+        // Create fancy console output
+        PrettyPrintStream out = new PrettyPrintStream(System.out);
+        
+        // Print stylized header
+        out.foreground(RGBColor.of(25, 181, 254)).bold(true)
+           .println("\n=== Pretty Java Demo ===\n");
+           
+        // Show a progress bar
+        ProgressBarRunner progressBar = (ProgressBarRunner) ProgressRunnerFactory.createProgressBar(
+                "Processing files...", 50, RGBColor.of(92, 172, 238));
+        
+        progressBar.start();
+        for (int i = 0; i <= 100; i++) {
+            progressBar.withProgress(i / 100.0);
+            progressBar.withMessage("Processing files... " + i + "%");
+            Thread.sleep(20); // Simulate work
+        }
+        progressBar.stop();
+        
+        // Show a spinner
+        SpinnerProgressRunner spinner = (SpinnerProgressRunner) ProgressRunnerFactory.createSpinner(
+                "Loading data...", SpinnerProgressRunner.SpinnerType.DOTS);
+                
+        spinner.start();
+        Thread.sleep(2000); // Simulate work
+        spinner.stop();
+        
+        // Show task list
+        TaskListProgressRunner tasks = (TaskListProgressRunner) ProgressRunnerFactory.createTaskList(
+                "Setup steps:",
+                "Initialize application",
+                "Load configuration",
+                "Connect to database",
+                "Start services"
+        );
+        
+        tasks.start();
+        
+        for (int i = 0; i < 4; i++) {
+            tasks.markTaskInProgress(i);
+            Thread.sleep(500); // Simulate work
+            tasks.markTaskComplete(i);
+        }
+        
+        tasks.stop();
+        
+        // Print stylized result
+        out.println();
+        out.println(TerminalStyle.SUCCESS, "✓ All operations completed successfully!");
+        out.println();
+        
+        // Create clickable links (supported in modern terminals like iTerm2, Windows Terminal)
+        out.println("For more information, visit:");
+        out.printlnHyperlink("https://github.com/joshuasalcedo-io/joshuasalcedo-library", "GitHub Repository");
+    }
+}
+```
+
+## What This Example Does
+
+When you run this example, you'll see:
+
+1. A colorful header with bold text
+2. A blue progress bar that fills up while showing percentage
+3. A loading spinner animation
+4. A task list that shows tasks being completed one by one
+5. A success message with green checkmark
+6. A clickable hyperlink (in terminals that support OSC 8 hyperlinks)
+
+This demonstrates the core capabilities of the library in just a few lines of code!
+
 ## Installation
 
 ### Maven
@@ -25,7 +111,7 @@ Add the following dependency to your `pom.xml`:
 <dependency>
     <groupId>io.joshuasalcedo.library</groupId>
     <artifactId>pretty-java-core</artifactId>
-    <version>${version}</version>
+    <version>0.1.1</version>
 </dependency>
 ```
 
@@ -34,8 +120,85 @@ Add the following dependency to your `pom.xml`:
 Add the following to your `build.gradle`:
 
 ```groovy
-implementation 'io.joshuasalcedo.library:pretty-java-core:${version}'
+implementation 'io.joshuasalcedo.library:pretty-java-core:0.1.1'
 ```
+
+### Using with the Parent BOM
+
+For easier dependency management, you can use the parent BOM:
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.joshuasalcedo.library</groupId>
+            <artifactId>library-parent</artifactId>
+            <version>0.1.1</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>io.joshuasalcedo.library</groupId>
+        <artifactId>pretty-java-core</artifactId>
+        <!-- No version needed when using the parent BOM -->
+    </dependency>
+</dependencies>
+```
+
+### Spring Boot Integration
+
+For Spring Boot applications, add the dependency to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>io.joshuasalcedo.library</groupId>
+    <artifactId>pretty-java-core</artifactId>
+    <version>0.1.1</version>
+</dependency>
+```
+
+Then create a bean for the PrettyPrintStream:
+
+```java
+@Configuration
+public class PrettyConsoleConfig {
+    
+    @Bean
+    public PrettyPrintStream prettyPrintStream() {
+        return new PrettyPrintStream(System.out);
+    }
+}
+```
+
+And use it in your services:
+
+```java
+@Service
+public class DataProcessingService {
+    
+    private final PrettyPrintStream console;
+    
+    public DataProcessingService(PrettyPrintStream console) {
+        this.console = console;
+    }
+    
+    public void processData() throws Exception {
+        // Create a progress bar
+        ProgressBarRunner progressBar = (ProgressBarRunner) ProgressRunnerFactory.createProgressBar(
+                "Processing data...", 50, RGBColor.of(92, 172, 238));
+        
+        progressBar.start();
+        
+        // Your processing logic
+        
+        progressBar.stop();
+        console.println(TerminalStyle.SUCCESS, "Data processing complete!");
+    }
+}
 
 ## Key Features
 
@@ -137,7 +300,35 @@ out.foreground(RGBColor.of(255, 69, 0))
 out.println(TerminalStyle.SUCCESS, "Task completed successfully");
 out.println(TerminalStyle.ERROR, "An error occurred");
 out.println(TerminalStyle.WARNING, "Warning: disk space low");
+
+// Clickable hyperlinks (works in terminals that support OSC 8)
+out.printlnHyperlink("https://github.com/joshuasalcedo-io", "Visit GitHub");
 ```
+
+### Clickable Terminal Hyperlinks
+
+Pretty Java Core supports creating clickable hyperlinks in terminals that support the OSC 8 hyperlink protocol (such as iTerm2, Windows Terminal, and many modern terminal emulators):
+
+```java
+PrettyPrintStream console = new PrettyPrintStream(System.out);
+
+// Basic hyperlink with custom text
+console.printlnHyperlink("https://github.com/joshuasalcedo-io", "Visit Joshua's GitHub");
+
+// Hyperlink using the URL as display text
+console.printlnHyperlink("https://joshuasalcedo.io", null);
+
+// Hyperlinks in sections of text
+console.println("For more information, please ");
+console.printHyperlink("https://example.com/docs", "view our documentation");
+console.println(".");
+```
+
+Key features:
+- Links are automatically styled with a recognizable blue color and underline
+- Graceful fallback for terminals that don't support OSC 8 (showing URL in parentheses)
+- Can use either custom text or the URL itself as display text
+- Available in both print and println variants
 
 ## Advanced Features
 

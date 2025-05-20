@@ -18,8 +18,21 @@
     </modules>
     <dependencyManagement>
         <dependencies>
+            <!-- All pretty-java modules -->
+            <dependency>
+                <groupId>io.joshuasalcedo.library</groupId>
+                <artifactId>pretty-java</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+            </dependency>
+            
+            <dependency>
+                <groupId>io.joshuasalcedo.library</groupId>
+                <artifactId>pretty-java-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            
             <!-- JUnit Platform Suite for test suites -->
-
         </dependencies>
     </dependencyManagement>
 
@@ -117,19 +130,21 @@
     </scm>
 
     <properties>
-        <revision>0.1.1</revision>
+        <revision>0.1.4</revision>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lombok.version>1.18.38</lombok.version>
         <!-- Plugin Versions -->
         <central-publishing-maven-plugin.version>0.7.0</central-publishing-maven-plugin.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+        <maven-source-plugin.version>4.0.0-beta-1</maven-source-plugin.version>
         <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
         <maven-gpg-plugin.version>3.2.6</maven-gpg-plugin.version>
+        <maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
+        <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
 
-            <sonar.organization>joshuasalcedo-io</sonar.organization>
-            <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>joshuasalcedo-io</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
         <!-- Dependency Versions -->
         <junit-platform.version>1.10.1</junit-platform.version>
@@ -138,6 +153,9 @@
 
         <!-- GPG Configuration -->
         <gpg.skip>false</gpg.skip>
+        
+        <!-- BOM Configuration for automatic dependency import -->
+        <bom.automatic-module-name>io.joshuasalcedo.library.bom</bom.automatic-module-name>
     </properties>
 
     <build>
@@ -157,17 +175,51 @@
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>5.1.0.4751</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven-deploy-plugin.version}</version>
+                <configuration>
+                    <deployAtEnd>true</deployAtEnd>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>${flatten-maven-plugin.version}</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
+    <!-- Base Distribution Management for Nexus -->
     <distributionManagement>
         <snapshotRepository>
-            <id>${distro.id}</id>
-            <url>${distributionManagement.snapshotRepository.url}</url>
+            <id>joshuasalcedo-nexus</id>
+            <url>https://repo.joshuasalcedo.io/repository/maven-snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>${distro.id}</id>
-            <url>${distributionManagement.repository.url}</url>
+            <id>joshuasalcedo-nexus</id>
+            <url>https://repo.joshuasalcedo.io/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
 
@@ -320,21 +372,27 @@
         <!-- Nexus Repository Publishing Profile -->
         <profile>
             <id>nexus</id>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>joshuasalcedo-nexus</id>
-                    <url>https://repo.joshuasalcedo.io/repository/maven-snapshots/</url>
-                </snapshotRepository>
-                <repository>
-                    <id>joshuasalcedo-nexus</id>
-                    <url>https://repo.joshuasalcedo.io/repository/maven-releases/</url>
-                </repository>
-            </distributionManagement>
+            <!-- Default repository is already set to Nexus in the main distributionManagement section -->
+            <activation>
+                <property>
+                    <name>deploy.repository.type</name>
+                    <value>nexus</value>
+                </property>
+                <!-- Active by default when no specific repository type is specified -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
         </profile>
 
         <!-- GitHub Packages Publishing Profile -->
         <profile>
             <id>github</id>
+            <activation>
+                <property>
+                    <name>deploy.repository.type</name>
+                    <value>github</value>
+                </property>
+            </activation>
+            <!-- Explicitly override the base distributionManagement when this profile is active -->
             <distributionManagement>
                 <repository>
                     <id>github</id>
@@ -347,6 +405,10 @@
                     <url>https://maven.pkg.github.com/joshuasalcedo-io/joshuasalcedo-library</url>
                 </snapshotRepository>
             </distributionManagement>
+            <properties>
+                <!-- This property ensures only GitHub deployment is active -->
+                <nexus.deployment.skip>true</nexus.deployment.skip>
+            </properties>
         </profile>
     </profiles>
 

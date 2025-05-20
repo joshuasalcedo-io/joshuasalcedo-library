@@ -36,6 +36,9 @@ public class PrettyPrintStream extends PrintStream {
     private static final String ANSI_BLINK = "\u001B[5m";
     private static final String ANSI_REVERSE = "\u001B[7m";
     private static final String ANSI_STRIKETHROUGH = "\u001B[9m";
+    private static final String OSC_HYPERLINK_START = "\u001B]8;;";
+    private static final String OSC_HYPERLINK_END = "\u001B\\";
+    private static final String OSC_HYPERLINK_CLOSE = "\u001B]8;;\u001B\\";
 
     private RGBColor foregroundColor;
     private RGBColor backgroundColor;
@@ -467,6 +470,57 @@ public class PrettyPrintStream extends PrintStream {
         print(text);
         this.foreground(oldFg).background(oldBg);
     }
+    
+    /**
+     * Prints a clickable hyperlink. This uses OSC 8 escape sequence which is supported by
+     * many modern terminals (iTerm2, Windows Terminal, etc.) to make the link clickable.
+     * 
+     * @param url The URL to link to
+     * @param text The text to display (if null, the URL itself is displayed)
+     */
+    public void printHyperlink(String url, String text) {
+        if (url == null || url.isEmpty()) {
+            return;
+        }
+        
+        String displayText = (text != null && !text.isEmpty()) ? text : url;
+        
+        // Save current settings
+        boolean oldUnderline = this.underline;
+        RGBColor oldFg = this.foregroundColor;
+        TerminalStyle oldStyle = this.terminalStyle;
+        
+        // Apply hyperlink style (blue text + underline)
+        this.style(TerminalStyle.HYPERLINK);
+        this.underline(true);
+        
+        // Use OSC 8 escape sequence for clickable links
+        // Format: ESC]8;;URL<ESC>\ Display Text ESC]8;;<ESC>\
+        if (TerminalUtils.isAnsiSupported()) {
+            String linkText = OSC_HYPERLINK_START + url + OSC_HYPERLINK_END + displayText + OSC_HYPERLINK_CLOSE;
+            super.print(format(linkText));
+        } else {
+            // If ANSI is not supported, just print the formatted text
+            super.print(format(displayText + " (" + url + ")"));
+        }
+        
+        // Restore previous settings
+        this.underline = oldUnderline;
+        this.foregroundColor = oldFg;
+        this.terminalStyle = oldStyle;
+    }
+    
+    /**
+     * Prints a clickable hyperlink with a line feed. Uses OSC 8 escape sequence supported by
+     * many modern terminals (iTerm2, Windows Terminal, etc.) to make the link clickable.
+     * 
+     * @param url The URL to link to
+     * @param text The text to display (if null, the URL itself is displayed)
+     */
+    public void printlnHyperlink(String url, String text) {
+        printHyperlink(url, text);
+        println();
+    }
 
     // Main method to demonstrate the PrettyPrintStream
     public static void main(String[] args) {
@@ -505,6 +559,13 @@ public class PrettyPrintStream extends PrintStream {
             out.println(TerminalStyle.SUCCESS, "This is a success message");
             out.println(TerminalStyle.INFO, "This is an info message");
         }
+        
+        // Demonstrate hyperlinks
+        out.println("\nHyperlink Examples:");
+        out.println("The following are clickable links in terminals that support it:");
+        out.printlnHyperlink("https://github.com/joshuasalcedo-io/joshuasalcedo-library", "GitHub Repository");
+        out.printlnHyperlink("https://joshuasalcedo.io", "Joshua Salcedo's Website");
+        out.printlnHyperlink("https://example.com", null); // URL as text
         
         // Demonstrate gradients
         out.println("\nColor Gradients:");
